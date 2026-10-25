@@ -62,7 +62,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#111;font-family:Georg
 #handL{right:calc(50% + 1vw)}#handR{left:calc(50% + 1vw)}
 body.riding #hands{display:none!important}
 body.riding #touch,body.riding .hbtn,body.riding .hud,body.riding #toast,body.riding #prompt{display:none!important}
-</style></head><body>
+.padfocus{outline:3px solid #e8b030!important;outline-offset:2px}</style></head><body>
 <canvas id="view"></canvas>
 <div id="fade"></div><div id="flash"></div>
 <div class="hud" id="top"><span id="where"></span><span id="clock"></span></div>
@@ -76,7 +76,7 @@ body.riding #touch,body.riding .hbtn,body.riding .hud,body.riding #toast,body.ri
 <div id="splash"><div class="card"><h1><small>DISNEYLAND</small>1967: A First-Person Walk</h1>
 <p>Sunday, August 13, 1967. Pirates of the Caribbean opened this spring, New Orleans Square is brand new, New Tomorrowland has been open since July 18, and you have $5.00 in your pocket.</p>
 <p>Walk Town Square and Main Street, step inside the shops, wander the Central Plaza, and queue for Pirates of the Caribbean. Everything is drawn in real time by a Wolfenstein-style grid raycaster.</p>
-<p class="fine">Move W A S D / arrows - look with the mouse (click the view) - Use / enter / sit E or Space - Items I - Map M - Photo P - Menu Esc. Carry up to two things, one in each hand: touch a hand (or press Z / X) to take a bite, sip, read the map or take a photo. On a phone: left stick, drag to look, round button to use.</p>
+<p class="fine">Move W A S D / arrows - look with the mouse (click the view) - Use / enter / sit E or Space - Items I - Map M - Photo P - Menu Esc. Carry up to two things, one in each hand: touch a hand (or press Z / X) to take a bite, sip, read the map or take a photo. With a game controller: left stick walks, right stick looks, A uses, X / Y use the hands, RB / L3 runs, LB photo, Start menu, B closes. On a phone: left stick, drag to look, round button to use.</p>
 <button id="go">Enter the park</button><button id="cont" style="display:none;background:#2a4a6a">Continue</button>
 <p class="fine">Layout is a compressed, approximate reconstruction from published descriptions and photographs. No blueprints are public.</p></div></div>
 <script>/**
@@ -2321,10 +2321,10 @@ function movePlayer(dt){
   p.a+=rot*2.0*dt+G.lookDX*.0032;G.lookDX=0;
   if(G.keys.PageUp)p.pitch=Math.min(70,p.pitch+60*dt);if(G.keys.PageDown)p.pitch=Math.max(-70,p.pitch-60*dt);
   if(G.sitting){p.pitch*=.9;return 0;}
-  let fw=(G.keys.KeyW||G.keys.ArrowUp?1:0)-(G.keys.KeyS||G.keys.ArrowDown?1:0)-G.joy.y;
-  let st=(G.keys.KeyD?1:0)-(G.keys.KeyA?1:0)+G.joy.x;
+  let fw=(G.keys.KeyW||G.keys.ArrowUp?1:0)-(G.keys.KeyS||G.keys.ArrowDown?1:0)-G.joy.y+PAD.fw;
+  let st=(G.keys.KeyD?1:0)-(G.keys.KeyA?1:0)+G.joy.x+PAD.st;
   fw=Math.max(-1,Math.min(1,fw));st=Math.max(-1,Math.min(1,st));
-  const run=(G.keys.ShiftLeft||G.keys.ShiftRight)&&G.S.energy>5;const sp=(run?4.0:2.5)*dt;
+  const run=(G.keys.ShiftLeft||G.keys.ShiftRight||PAD.run)&&G.S.energy>5;const sp=(run?4.0:2.5)*dt;
   let vx=(Math.cos(p.a)*fw-Math.sin(p.a)*st)*sp,vy=(Math.sin(p.a)*fw+Math.cos(p.a)*st)*sp;
   const R=.22;
   if(blockedAt(m,p.x,p.y,R)){const f=freeSpotNear(m,p.x,p.y,null);p.x=f.x;p.y=f.y;}
@@ -2334,11 +2334,11 @@ function movePlayer(dt){
 }
 /* ---------- main loop ---------- */
 function frame(t){
-  requestAnimationFrame(frame);const dt=Math.min(.05,(t-G.last)/1000||0.016);G.last=t;
+  requestAnimationFrame(frame);const dt=Math.min(.05,(t-G.last)/1000||0.016);G.last=t;padPoll(dt);
   if(!G.started)return;
   if(G.mode==='ride'&&G.ride){rideUpdate(dt);}
   else if(!G.paused&&G.mode==='play'&&G.vride){vrideUpdate(dt);simulate(dt,0);vehicleSounds(dt,G.map,G.pl);}
-  else if(!G.paused&&G.mode==='play'){const ox=G.pl.x,oy=G.pl.y;const mv=movePlayer(dt);simulate(dt,mv);const run=(G.keys.ShiftLeft||G.keys.ShiftRight)&&G.S.energy>5;stepper(dt,Math.hypot(G.pl.x-ox,G.pl.y-oy),run);vehicleSounds(dt,G.map,G.pl);}
+  else if(!G.paused&&G.mode==='play'){const ox=G.pl.x,oy=G.pl.y;const mv=movePlayer(dt);simulate(dt,mv);const run=(G.keys.ShiftLeft||G.keys.ShiftRight)&&G.S.energy>5;stepper(dt,Math.hypot(G.pl.x-ox,G.pl.y-oy),run||PAD.run&&G.S.energy>5);vehicleSounds(dt,G.map,G.pl);}
   else if(!G.paused)simulate(dt*0.2,0);
   if(G.map){doorTick(dt);stepNPCs(G.map,dt,G.pl);if(G.map===MAPS.park)updateStreetcar(G.map,dt);if(G.map.tick)G.map.tick(G.map,dt);envUpdate(G.map);
     checkTriggers();
@@ -3794,7 +3794,7 @@ P3D.begin=function(R){ // called from startRide inside the fade
   R.p3d=true;R.t=0;R.u=0;R.speed=1.4;R.yaw=0;R.pit=0;R.idle=0;R.ev=0;R.drop=0;R.clock=0;cv3.style.display='block';cv3.style.opacity=1;
   const c=document.getElementById('view');if(c)c.style.visibility='hidden';
 };
-const LK={dx:0,dy:0};
+const LK={dx:0,dy:0};P3D.LK=LK;
 (function(){let id=null,lx=0,ly=0;const ui=t=>t.closest&&t.closest('#stick,#btnUse,#btnInv,#btnMap,#btnCam,#btnMenu,#hop,button,.panel,#menu,#inv');
   const on=()=>G.ride&&G.ride.p3d;
   addEventListener('pointerdown',e=>{if(!on()||ui(e.target))return;id=e.pointerId;lx=e.clientX;ly=e.clientY;},true);
@@ -3885,6 +3885,50 @@ P3D.dbg=function(){const c={};let n=0;scene.traverse(o=>{if(o.isMesh||o.isSprite
 P3D.stop=function(){if(!P3D.ready)return;cv3.style.display='none';const c=document.getElementById('view');if(c)c.style.visibility='visible';};
 Object.defineProperty(P3D,'active',{get(){return !!(G.ride&&G.ride.p3d);}});
 })();
+
+/* ---------- USB / Bluetooth game controller (Gamepad API, standard mapping) ---------- */
+const PAD={fw:0,st:0,run:0,on:false,prev:[],foc:0,last:-1};
+function padDead(x,y){const l=Math.hypot(x,y);if(l<.2)return[0,0];const k=Math.min(1,(l-.2)/.8)/l;return[x*k,y*k];}
+function padFocusables(){return[...document.querySelectorAll('#panel.on button, #panel.on [data-act], #panel.on .item, #panel.on a')].filter(e=>e.offsetParent!==null&&e.getBoundingClientRect().width>0);}
+function padFocus(d){const f=padFocusables();document.querySelectorAll('.padfocus').forEach(e=>e.classList.remove('padfocus'));if(!f.length)return;PAD.foc=((PAD.foc+d)%f.length+f.length)%f.length;const e=f[PAD.foc];e.classList.add('padfocus');if(e.scrollIntoView)e.scrollIntoView({block:'nearest'});}
+function padPoll(dt){
+  PAD.fw=PAD.st=PAD.run=0;
+  const gps=navigator.getGamepads?navigator.getGamepads():[];let gp=null;
+  for(const g of gps)if(g&&g.connected&&(!gp||g.mapping==='standard'))gp=g;
+  if(!gp){PAD.on=false;return;}
+  if(!PAD.on){PAD.on=true;if(G.started)say('Game controller connected. Left stick walk, right stick look, A use, X/Y hands, Start menu.',4000);}
+  const b=i=>gp.buttons[i]&&gp.buttons[i].pressed,a=i=>gp.axes[i]||0;
+  const hit=i=>b(i)&&!PAD.prev[i];
+  const [lx,ly]=padDead(a(0),a(1)),[rx,ry]=padDead(a(2),a(3));
+  const panelOn=$('panel').classList.contains('on');
+  // title screen
+  if(!G.started){if(hit(0)||hit(9)){const c=$('cont');(c&&c.style.display!=='none'?c:$('go')).click();}if(hit(2))$('go').click();}
+  else if(panelOn){
+    if(hit(12)||ly<-.6&&PAD.last!==1){padFocus(-1);PAD.last=1;}
+    else if(hit(13)||ly>.6&&PAD.last!==2){padFocus(1);PAD.last=2;}
+    else if(Math.abs(ly)<.4)PAD.last=-1;
+    if(hit(0)){const f=padFocusables(),e=f[PAD.foc];if(e)e.click();}
+    if(hit(1)||hit(9)||(hit(3)&&G.panelKind==='inv')){closePanel();G.panelKind=null;}
+    if(hit(2)&&G.panelKind!=='inv'){togglePanel('inv');}
+    if(ry>.6&&PAD.last!==3){const p=$('panel');p.scrollTop+=140;}if(ry<-.6){$('panel').scrollTop-=140;}
+  }else{
+    PAD.foc=0;
+    if(hit(9))togglePanel('menu');
+    else if(G.paused){if(hit(0)||hit(1)){const e=document.elementFromPoint(innerWidth/2,innerHeight/2);if(e&&e.click)e.click();}}
+    else{
+      if(hit(0))useAction();
+      if(hit(2))handAct('L');if(hit(3))handAct('R');
+      if(hit(4))photoKey();if(hit(14)||hit(8))mapKey();if(hit(15))togglePanel('inv');
+      if(hit(1)&&G.vride)endVehicleRide();
+      if(G.mode==='play'&&!G.ride){PAD.fw=-ly;PAD.st=lx;PAD.run=(b(5)||b(10)||b(7)||a(1)<-.97)?1:0;}
+      const p3=G.ride&&G.ride.p3d,sx=p3?520:760;
+      G.lookDX+=(rx+(G.ride?lx:0))*sx*dt;
+      if(p3&&typeof P3D!=='undefined'&&P3D.LK)P3D.LK.dy+=ry*430*dt;
+      else if(G.pl)G.pl.pitch=Math.max(-70,Math.min(70,G.pl.pitch-ry*90*dt));
+    }
+  }
+  for(let i=0;i<gp.buttons.length;i++)PAD.prev[i]=b(i);
+}
 
 function boot(){
   initSprites();initSprites2();initSprites3();initSprites4();initSprites5();makePano();initWorld();
