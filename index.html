@@ -1257,6 +1257,7 @@ const SHOWS={
   'You rise over the avenue, past the Rocket Jets tower, then slip into a building and out again before sliding back to the platform.']},
  autopia:{title:'Autopia',letter:'C',snd:[SFX.rumble],lines:[
   'You take the wheel of a little gas-powered car on a guide rail. You pull away with a clatter and lap the course past the plastic freeway signs, with a hundred other cars buzzing around you.']},
+ skyway:{title:'Skyway to Fantasyland',letter:'D',snd:[SFX.whoosh],lines:['You step into a gondola of the aerial tramway. The cable lifts it out over Tomorrowland, past the Submarine lagoon and the Autopia track.','The cars slide through an opening in the Matterhorn, past the bobsled tracks, and out above the Fantasyland rooftops before the station in Fantasyland. (This ride is one way.)']},
  house:{title:'Monsanto House of the Future',snd:[SFX.chime],lines:[
   'A white plastic cross-shaped house raised on four wings, packed with a microwave oven, a picture-phone and an ultrasonic dishwasher. Monsanto\'s showcase has stood here since 1957, and this is its last year.']}
 };
@@ -1271,6 +1272,11 @@ SPEC.subm={style:'modern',name:'SUBMARINE VOYAGE',wall:'#dce8ec',trim:'#ffffff',
 SPEC.monor={style:'modern',name:'MONORAIL STATION',wall:'#f0f0f0',trim:'#ffffff',signBg:'#a82f3a',signFg:'#fff',awning:['#a82f3a','#ffffff'],display:'none',door:1,doorColor:'#a82f3a'};
 SPEC.people={style:'modern',name:'PEOPLEMOVER',wall:'#eef0f4',trim:'#ffffff',signBg:'#1f6aa0',signFg:'#fff',awning:['#1f6aa0','#ffffff'],display:'none',door:1,doorColor:'#1f6aa0'};
 SPEC.house={style:'modern',name:'HOUSE OF THE FUTURE',wall:'#f4f4f0',trim:'#ffffff',signBg:'#3a3a3a',signFg:'#f4f0e6',awning:['#8a8a8a','#ffffff'],display:'none',door:1,doorColor:'#3a3a3a'};
+SPEC.skyway={style:'modern',name:'SKYWAY TO FANTASYLAND',wall:'#f0f0f0',trim:'#ffffff',signBg:'#2a6aa8',signFg:'#fff',awning:['#2a6aa8','#ffffff'],display:'none',door:1,doorColor:'#2a6aa8'};
+SPEC.rail={style:'modern',name:'SANTA FE & DISNEYLAND RAILROAD',wall:'#e8e2d4',trim:'#ffffff',signBg:'#3a2a1c',signFg:'#e8c860',awning:['#3a2a1c','#ffffff'],display:'none'};
+SPEC.hatter={style:'modern',name:'MAD HATTER SHOP',wall:'#f2ead8',trim:'#ffffff',signBg:'#6a2a7a',signFg:'#f6e8a0',awning:['#6a2a7a','#ffffff'],display:'none'};
+SPEC.spacebar={style:'modern',name:'THE SPACE BAR',wall:'#eef0f4',trim:'#ffffff',signBg:'#1f6aa0',signFg:'#fff',awning:['#1f6aa0','#ffffff'],display:'none'};
+SPEC.charshop={style:'modern',name:'CHARACTER SHOP',wall:'#f4efe6',trim:'#ffffff',signBg:'#c0161e',signFg:'#fff8e0',awning:['#c0161e','#ffffff'],display:'none'};
 function paintModern(s){ // 1967 'New Tomorrowland' look: white panels, bold accent canopy, glass, round windows
   const c=mk(512,256),x=c.getContext('2d'),acc=s.signBg||'#2d6cb0',fg=s.signFg||'#fff';
   x.fillStyle=s.wall||'#eef2f6';x.fillRect(0,0,512,256);
@@ -1290,37 +1296,51 @@ function buildTml(){
   const tw=defWall({tex:wallTex('tmlwall',64,128,(x,w,h,r)=>{x.fillStyle='#e8eef4';x.fillRect(0,0,w,h);x.fillStyle='#2d6cb0';x.fillRect(0,0,w,6);x.fillStyle='#c9d4de';for(let i=0;i<8;i++)x.fillRect(i*8,10,1,118);x.fillStyle='#d8e4ee';for(let i=0;i<4;i++)x.fillRect(4+i*16,30,10,40);}),h:1.6});
   rect(m,2,3,49,31,0);frect(m,2,3,49,31,'tmlfloor');
   for(let x=2;x<=49;x++){put(m,x,2,tw);put(m,x,32,tw);}for(let y=2;y<=32;y++){put(m,1,y,tw);put(m,50,y,tw);}
-  rect(m,1,16,2,18,0);frect(m,1,16,2,18,'plaza'); m.tri.push({x0:.2,y0:15.8,x1:1.9,y1:19,go:{map:'park',x:36.5,y:11,a:Math.PI}});
+  // ---- layout follows the Summer 1967 Disneyland guide map (north up, entrance plaza west, hub in the middle) ----
+  rect(m,1,21,2,23,0);frect(m,1,21,2,23,'plaza'); m.tri.push({x0:.2,y0:20.8,x1:1.9,y1:24,go:{map:'park',x:36.5,y:11,a:Math.PI}});
+  frect(m,2,19,8,26,'plaza');frect(m,9,21,26,23,'plaza');frect(m,26,17,34,24,'plaza');
   const att=(dir,fixed,a,spec,key,label)=>{facade(m,dir,fixed,a,makeShopWalls(SPEC[spec],{fn:showFn(key),label:label||('Enter '+SPEC[spec].name)}));};
   const dec=(dir,fixed,a,spec)=>facade(m,dir,fixed,a,decorWalls(spec));
-  // north row (viewer faces N)
-  att('N',3,4,'carousel','carousel','Enter the Carousel of Progress (free)');dec('N',3,8,'carousel');
-  att('N',3,14,'inner','inner','Enter Adventure Thru Inner Space (free)');dec('N',3,18,'inner');
-  facade(m,'N',3,24,makeShopWalls(SPEC.terrace,{fn:()=>openShopUI({name:'Tomorrowland Terrace',menu:['hamburger','hot dog','french fries','cola'],blurb:'Opened July 2, 1967 and sponsored by Coca-Cola: a counter-service stand for hamburgers, hot dogs and french fries, with a stage beside it. Prices here are estimates.'}),label:'Order at Tomorrowland Terrace'}));
-  dec('N',3,28,'terrace');
-  att('N',3,34,'moon','moon','Board Flight to the Moon (D coupon)');dec('N',3,38,'moon');
-  att('N',3,44,'people','people','Ride the PeopleMover (D coupon)');
-  // south row (viewer faces S)
-  att('S',31,4,'autopia','autopia','Drive Autopia (C coupon)');dec('S',31,8,'autopia');
-  att('S',31,14,'subm','sub','Board the Submarine Voyage (E coupon)');dec('S',31,18,'subm');
-  att('S',31,24,'circle','circle','Watch America the Beautiful (free)');dec('S',31,28,'circle');
-  att('S',31,34,'house','house','Tour the House of the Future (free)');
-  // east edge: monorail station (viewer faces E)
-  facade(m,'E',49,13,makeShopWalls(SPEC.monor,{fn:showFn('monorail'),label:'Ride the Monorail (E coupon)'}));
-  // Rocket Jets tower in the centre with a stair use
-  const rj=addSprite(m,'rj0',26,17,{});rj.label='Ride the Rocket Jets (D coupon)';rj.useFn=showFn('rocket');
-  // monorail beam (decor) and lamps/benches/gardens
-  for(let x=4;x<=48;x+=8){addSprite(m,'mlamp',x,15.5);addSprite(m,'mlamp',x,19.5);}
-  [[10,12],[10,22],[40,12],[40,22],[18,25],[34,9]].forEach(p=>addSprite(m,'bench',p[0],p[1]).bench=true);
-  [[14,17],[38,17]].forEach(p=>{addSprite(m,'flowerbed',p[0],p[1],{noblock:true});addSprite(m,'bush',p[0]+1,p[1],{noblock:true});});
-  [[6,24],[44,9],[44,24]].forEach(p=>addSprite(m,'tree',p[0],p[1]));
-  [[24,12],[30,22]].forEach(p=>{const pop=addSprite(m,'popcorn',p[0],p[1]);pop.stand='popcorn';});
-  addSprite(m,'matterhorn',58,-20,{noblock:true});
+  const blk=(x0,y0,x1,y1)=>rect(m,x0,y0,x1,y1,tw);
+  // north edge: Richfield Autopias (1) and the Submarine Voyage lagoon (5)
+  att('N',3,17,'autopia','autopia','Drive Autopia (C coupon)');dec('N',3,21,'autopia');
+  att('N',3,29,'subm','sub','Board the Submarine Voyage (E coupon)');dec('N',3,33,'subm');
+  // Monorail station (4), under the beam, north of the plaza
+  blk(24,7,27,9);facade(m,'N',9,24,makeShopWalls(SPEC.monor,{fn:showFn('monorail'),label:'Ride the Monorail (E coupon)'}));
+  // Bell Telephone exhibit - America the Beautiful (16) and Coca-Cola Refreshment Gardens / Terrace (10), north-west of the hub
+  blk(12,12,19,14);att('N',14,12,'circle','circle','Watch America the Beautiful (free)');dec('N',14,16,'circle');
+  blk(21,12,28,14);
+  facade(m,'N',14,21,makeShopWalls(SPEC.terrace,{fn:()=>openShopUI({name:'Tomorrowland Terrace',menu:['hamburger','hot dog','french fries','cola'],blurb:'Opened July 2, 1967 and sponsored by Coca-Cola. A Coca-Cola Refreshment Gardens stand serves from the terrace.',keeper:'a soda jerk in a paper hat'}),label:'Enter Tomorrowland Terrace'}));
+  dec('N',14,25,'terrace');
+  // Monsanto House of the Future (14), west of the arrival plaza
+  blk(3,13,5,17);att('W',5,14,'house','house','Tour the House of the Future (free)');
+  // east edge: Skyway to Fantasyland (2) and the railroad station (3)
+  facade(m,'E',49,14,makeShopWalls(SPEC.skyway,{fn:showFn('skyway'),label:'Ride the Skyway to Fantasyland (D coupon)'}));
+  dec('E',49,9,'rail');
+  // Mad Hatter shop (13)
+  blk(34,15,38,16);dec('N',16,34,'hatter');
+  // the hub: Rocket Jets (7), Goodyear PeopleMover (8), Space Bar (11)
+  blk(25,17,28,18);att('N',18,25,'people','people','Ride the PeopleMover (D coupon)');
+  blk(32,17,35,18);dec('N',18,32,'spacebar');
+  const rj=addSprite(m,'rj0',30,20.5,{});rj.label='Ride the Rocket Jets (D coupon)';rj.useFn=showFn('rocket');
+  // south-west: Inner Space (15) in the old Monsanto Hall of Chemistry, Character Shop (12)
+  blk(13,27,20,29);att('S',27,13,'inner','inner','Enter Adventure Thru Inner Space (free)');dec('S',27,17,'inner');
+  blk(23,27,26,29);dec('S',27,23,'charshop');
+  // south-east: GE Carousel of Progress (17) and Flight to the Moon (9)
+  blk(36,23,43,25);att('S',23,36,'carousel','carousel','Enter the Carousel of Progress (free)');dec('S',23,40,'carousel');
+  att('S',31,32,'moon','moon','Board Flight to the Moon (D coupon)');dec('S',31,36,'moon');
+  // lamps, benches, gardens
+  for(let x=10;x<=26;x+=8){addSprite(m,'mlamp',x,20.2);addSprite(m,'mlamp',x,23.8);}
+  [[12,25],[20,25],[34,21],[30,15],[44,19]].forEach(p=>addSprite(m,'bench',p[0],p[1]).bench=true);
+  [[8,16],[44,12]].forEach(p=>{addSprite(m,'flowerbed',p[0],p[1],{noblock:true});addSprite(m,'bush',p[0]+1,p[1],{noblock:true});});
+  [[7,28],[46,28],[46,6],[8,8]].forEach(p=>addSprite(m,'tree',p[0],p[1]));
+  [[29,12],[33,26]].forEach(p=>{const pop=addSprite(m,'popcorn',p[0],p[1]);pop.stand='popcorn';});
+  addSprite(m,'matterhorn',10,-18,{noblock:true});
   for(let i=0;i<14;i++)addSprite(m,'trees_far',-10+i*8,-8,{noblock:true});
   spawnCrowd(m,26,4,4,48,30);
-  m.labels=[[4,17,'Entrance (Central Plaza)'],[26,17,'Rocket Jets'],[49,15,'Monorail']];
+  m.labels=[[4,22,'Entrance (Central Plaza)'],[30,20.5,'Rocket Jets / hub'],[20,4,'Autopia'],[25,8,'Monorail'],[49,14,'Skyway']];
   tmlDecor(m);
-  m.spawn={x:3.2,y:17.5,a:0};
+  m.spawn={x:3.2,y:22.5,a:0};
   return m;
 }
 /* ---- Main Street vehicle rides (A coupon) ---- */
@@ -1396,14 +1416,14 @@ function flagTick(m,dt){
     x.fillStyle='#2d4f94';x.fillRect(fx,fy,20,16);x.fillStyle='#fff';let n=0;for(let r=0;r<5;r++){const c=r%2?6:7;for(let k=0;k<c&&n<31;k++){x.fillRect(fx+1.5+k*2.7+(r%2?1.3:0),fy+1.5+r*2.8,1.3,1.3);n++;}}},{});
   window.tmlDecor=function(m){
     // fins above the Carousel / Inner Space showbuildings and the far end
-    [[12.5,3.7],[22.5,3.7],[32.5,3.7]].forEach(p=>addSprite(m,'tfin',p[0],p[1],{noblock:true}));
+    [[19.5,3.7],[31.5,3.7]].forEach(p=>addSprite(m,'tfin',p[0],p[1],{noblock:true}));
     // elevated PeopleMover beam along the north side, pylons every 6 tiles
-    for(let x=5;x<=47;x+=1.5){const b=addSprite(m,'pmbeam',x,8,{noblock:true});b.z=2.4;}
-    for(let x=6;x<=46;x+=8)addSprite(m,'pmpylon',x,8,{noblock:true});
-    const tr=addSprite(m,'pmtrain',6,8,{noblock:true});tr.z=2.42;tr.dir=1;tr.wait=0;
+    for(let x=22;x<=38;x+=1.5){const b=addSprite(m,'pmbeam',x,24.6,{noblock:true});b.z=2.4;}
+    for(let x=23;x<=37;x+=7)addSprite(m,'pmpylon',x,24.6,{noblock:true});
+    const tr=addSprite(m,'pmtrain',22,24.6,{noblock:true});tr.z=2.42;tr.dir=1;tr.wait=0;
     const rj=m.sprites.find(s=>s.label==='Ride the Rocket Jets (D coupon)');
     let t=0;m.tickTml=(dt)=>{t+=dt;
-      if(tr.wait>0)tr.wait-=dt;else{tr.x+=tr.dir*2.4*dt;if(tr.x>44){tr.dir=-1;tr.wait=4;tr.x=44;}if(tr.x<6){tr.dir=1;tr.wait=4;tr.x=6;}}
+      if(tr.wait>0)tr.wait-=dt;else{tr.x+=tr.dir*2.4*dt;if(tr.x>38){tr.dir=-1;tr.wait=4;tr.x=38;}if(tr.x<22){tr.dir=1;tr.wait=4;tr.x=22;}}
       if(rj)rj.def=SPR['rj'+((t*1.4|0)%8)];};
     m.tick=(mm,dt)=>m.tickTml(dt);
   };
