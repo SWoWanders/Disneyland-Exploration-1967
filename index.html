@@ -195,6 +195,10 @@ function paintFacadeBase(s){
   // cornice + dentils
   x.fillStyle=trim;x.fillRect(0,0,512,22);x.fillStyle=shadeHex(trim,.8);x.fillRect(0,18,512,6);for(let i=0;i<64;i++)x.fillRect(i*8+1,10,5,8);
   x.fillStyle=s.roofline||shadeHex(wall,.7);x.fillRect(0,0,512,6);
+  // steep shingled mansard roof with dormers (1955 City Hall / Fire Station: 'steep wood shingle roof with dormers')
+  if(s.mansard){x.fillStyle=s.mansard;x.fillRect(0,0,512,30);x.fillStyle='rgba(0,0,0,.22)';for(let yy=4;yy<30;yy+=5)x.fillRect(0,yy,512,1);for(let xx=0;xx<512;xx+=9)for(let yy=0;yy<30;yy+=10)x.fillRect(xx+((yy/10)%2?4:0),yy,1,5);
+    for(let i=0;i<4;i++){const cx=i*128+64;x.fillStyle=trim;x.fillRect(cx-13,3,26,24);x.fillStyle='#3b4a5a';x.fillRect(cx-9,8,18,19);x.fillStyle=trim;x.beginPath();x.moveTo(cx-15,5);x.lineTo(cx,-3);x.lineTo(cx+15,5);x.fill();x.fillRect(cx-1,8,2,19);}
+    x.fillStyle=trim;x.fillRect(0,28,512,4);}
   // upper windows
   for(let i=0;i<4;i++){const cx=i*128+64;x.fillStyle=trim;x.fillRect(cx-31,44,62,86);x.fillStyle='#3b4a5a';x.fillRect(cx-25,50,50,74);
     const g=x.createLinearGradient(0,50,0,124);g.addColorStop(0,'#7da4c4');g.addColorStop(1,'#c9dbe6');x.fillStyle=g;x.fillRect(cx-25,50,50,74);
@@ -426,6 +430,18 @@ function initSprites(){
     },{});
   if(CASTLE_IMG.naturalWidth)spr('castle',CASTLE_IMG.naturalWidth,CASTLE_IMG.naturalHeight,10.5,10.5*CASTLE_IMG.naturalHeight/CASTLE_IMG.naturalWidth,x=>x.drawImage(CASTLE_IMG,0,0),{});
   if(CASTLEB_IMG.naturalWidth)spr('castleback',CASTLEB_IMG.naturalWidth,CASTLEB_IMG.naturalHeight,6.63,6.63*CASTLEB_IMG.naturalHeight/CASTLEB_IMG.naturalWidth,x=>x.drawImage(CASTLEB_IMG,0,0),{});
+  // ---- City Hall clock cupola and Fire Station tower: only the top (above the 2.0-high wall) is painted, the rest is transparent ----
+  spr('cupola',128,256,1.5,3.3,(x,w,h)=>{const wt=Math.round(h*(1-2/3.3));
+    x.fillStyle='#5b4b52';x.beginPath();x.moveTo(24,wt+2);x.lineTo(40,wt-14);x.lineTo(88,wt-14);x.lineTo(104,wt+2);x.fill();
+    x.fillStyle='#f1e9d6';x.fillRect(38,wt-52,52,38);x.fillStyle='#d9cfb8';x.fillRect(82,wt-52,8,38);x.fillRect(34,wt-56,60,6);
+    x.fillStyle='#fffdf4';x.beginPath();x.arc(64,wt-33,13,0,7);x.fill();x.strokeStyle='#2a2118';x.lineWidth=2;x.stroke();x.beginPath();x.moveTo(64,wt-33);x.lineTo(64,wt-42);x.moveTo(64,wt-33);x.lineTo(70,wt-30);x.stroke();
+    x.fillStyle='#5b4b52';x.beginPath();x.moveTo(30,wt-56);x.lineTo(64,wt-92);x.lineTo(98,wt-56);x.fill();x.fillStyle='rgba(0,0,0,.2)';for(let k=0;k<5;k++)x.fillRect(30+k*3,wt-56-k*7,68-k*6,1);
+    x.fillStyle='#d4b25a';x.fillRect(63,wt-104,2,14);x.beginPath();x.arc(64,wt-105,3,0,7);x.fill();
+    x.fillStyle='#f1e9d6';x.fillRect(46,wt-14,36,12);},{});
+  spr('firetower',96,256,1.1,3.0,(x,w,h)=>{const wt=Math.round(h*(1-2/3.0));
+    x.fillStyle='#9a4a3a';x.fillRect(22,wt-48,52,50);x.fillStyle='rgba(0,0,0,.25)';for(let yy=wt-48;yy<wt+2;yy+=5)x.fillRect(22,yy,52,1);x.fillStyle='#f1e9d6';x.fillRect(20,wt-52,56,6);x.fillRect(20,wt-4,56,6);
+    x.fillStyle='#3b4a5a';x.fillRect(40,wt-40,16,26);x.fillStyle='#f1e9d6';x.fillRect(38,wt-43,20,4);
+    x.fillStyle='#5b4b52';x.beginPath();x.moveTo(16,wt-52);x.lineTo(48,wt-84);x.lineTo(80,wt-52);x.fill();x.fillStyle='#d4b25a';x.fillRect(47,wt-100,2,18);},{});
   // ---- Matterhorn ----
   spr('matterhorn',512,512,13.5,13.2,(x,w,h,r)=>{
     const g=x.createLinearGradient(0,0,0,h);g.addColorStop(0,'#eaeef2');g.addColorStop(.55,'#a9b4bf');g.addColorStop(1,'#6f7f6a');
@@ -702,8 +718,8 @@ const SPEC={ // storefront looks: colours are period-plausible approximations
   jewel:{tags:['PRESCRIPTIONS', 'DRUGS', 'TOILETRIES'],name:'UPJOHN PHARMACY',wall:'#e6ecdf',trim:'#fbfdf6',signBg:'#1f5a46',signFg:'#f4f0d8',awning:['#1f5a46','#f1ebdc'],display:'none'},
   coke:{tags:['COCA-COLA', 'HOT DOGS', 'REFRESHMENTS'],name:'REFRESHMENT CORNER',wall:'#f4efe6',trim:'#ffffff',signBg:'#c0161e',signFg:'#ffffff',awning:['#c0161e','#ffffff'],display:'film',door:2,doorColor:'#8a1018'},
   hills:{tags:['COFFEE', 'HOT CHOCOLATE', 'LUNCHEON'],name:'HILLS BROS COFFEE HOUSE',wall:'#e2d2b4',trim:'#f6f1e2',signBg:'#7a2a1c',signFg:'#f2e2a0',awning:['#7a2a1c','#f1ebdc'],display:'coffee',door:1,doorColor:'#5a2a1a'},
-  city:{tags:['INFORMATION', 'PARK MAPS', 'CITY HALL'],name:'CITY HALL',wall:'#f3f0e6',trim:'#ffffff',signBg:'#2a3f6a',signFg:'#fff',awning:['#2a3f6a','#f1ebdc'],display:'books',door:1,doorColor:'#2a3f6a',bunting:true},
-  fire:{lamp:true,tags:['FIRE DEPARTMENT', 'ENGINE NO. 1', 'ENGINE NO. 1'],name:'MAIN STREET FIRE DEPARTMENT',wall:'#a8473a',trim:'#f1e9d6',signBg:'#f1e9d6',signFg:'#a8211c',awning:['#a8211c','#f1e9d6'],display:'fire',door:1,doorColor:'#3a1a14',brick:true},
+  city:{mansard:'#5b4b52',brick:true,tags:['INFORMATION', 'PARK MAPS', 'CITY HALL'],name:'CITY HALL',wall:'#9a4a3a',trim:'#f1e9d6',signBg:'#2a3f6a',signFg:'#fff',awning:['#2a3f6a','#f1ebdc'],display:'books',door:1,doorColor:'#2a3f6a',bunting:true},
+  fire:{mansard:'#5b4b52',lamp:true,tags:['FIRE DEPARTMENT', 'ENGINE NO. 1', 'ENGINE NO. 1'],name:'MAIN STREET FIRE DEPARTMENT',wall:'#a8473a',trim:'#f1e9d6',signBg:'#f1e9d6',signFg:'#a8211c',awning:['#a8211c','#f1e9d6'],display:'fire',door:1,doorColor:'#3a1a14',brick:true},
   opera:{tags:['OPERA HOUSE', 'MR. LINCOLN', 'OPERA HOUSE'],name:'MAIN STREET OPERA HOUSE',wall:'#e6d9c0',trim:'#fbf6e8',signBg:'#4a2030',signFg:'#e8c860',awning:['#6a2a3a','#f1ebdc'],display:'none',door:1,doorColor:'#4a2030'},
   plazainn:{tags:['PLAZA INN', 'DINNERS', 'LUNCHEON'],name:'PLAZA INN',wall:'#ece4d0',trim:'#fbf6ea',signBg:'#3a5a3a',signFg:'#f4e6a8',awning:['#3a5a3a','#f1ebdc'],display:'none'},
   flower:{tags:['FLOWERS', 'BOUQUETS', 'CORSAGES'],name:'FLOWER MARKET',wall:'#e4f0dc',trim:'#ffffff',signBg:'#3a7a3a',signFg:'#fff8e0',awning:['#3a7a3a','#f1ebdc'],display:'none',door:1,doorColor:'#2f5a2f'},
@@ -765,10 +781,12 @@ function buildPark(){
   rect(m,9,45,30,58,0);frect(m,9,45,30,58,'square');frect(m,16,45,23,45,'sidewalk');frect(m,18,45,21,58,'road');frect(m,19,45,19,58,'rail');
   rect(m,9,45,15,45,W.brick);rect(m,24,45,30,45,W.brick);
   rect(m,8,46,8,58,W.brick);rect(m,31,46,31,58,W.brick);rect(m,9,59,30,59,W.brick);
-  facade(m,'W',8,48,shopWalls('city','cityhall'));
-  facade(m,'W',8,53,shopWalls('hills','hills'));
+  facade(m,'W',8,46,shopWalls('fire','fire'));
+  facade(m,'W',8,50,shopWalls('city','cityhall'));
+  facade(m,'W',8,54,shopWalls('hills','hills'));
   facade(m,'E',31,46,shopWalls('opera','opera'));facade(m,'E',31,50,decorWalls('opera'));
-  facade(m,'E',31,54,shopWalls('fire','fire'));
+  facade(m,'E',31,54,decorWalls('opera'));
+  addSprite(m,'firetower',9.25,48,{noblock:true});addSprite(m,'cupola',9.25,52,{noblock:true});
   facade(m,'N',45,9,decorWalls('market').slice(0,4));
   // railroad station (south)
   const st=makeShopWalls(Object.assign({},SPEC.station,{door:null}),null);
@@ -823,7 +841,7 @@ function buildPark(){
   m.labels=[[20,53,'Town Square'],[20,38,'MAIN STREET'],[20,14.5,'Central Plaza'],[20,2.5,'Sleeping Beauty Castle'],[3,11.8,'Adventureland'],[3,6,'Frontierland'],[36,11.5,'Tomorrowland'],[20,58.5,'Railroad Station / Entrance']];
   m.uses.push({x:22.2,y:24.5,r:2.6,arc:2,label:'Look in the Upjohn Pharmacy window',fn:()=>{const S=G.S;let t="The front of Upjohn Pharmacy is an old-time apothecary: jars, show globes, scales, antique microscopes and a jar of live leeches. Nothing is sold; guests get free postcards and a sample of Unicap vitamins.";if(!S.upjohnCard&&S.inv.length<6){S.upjohnCard=1;addToPack({k:'postcard',type:'souvenir',desc:'a free Upjohn Pharmacy postcard',fun:2});t+=' You take a free postcard.';updateHUD();SND.pickup();}say(t,7500);}});
   m.uses.push({x:14,y:50.6,r:2.6,arc:2,label:'Look at the gas lamp',fn:()=>say('The Main Street gas lamps came from St. Louis, shipped west and set along the street.',5200)});
-  m.uses.push({x:27.5,y:53,r:3,arc:2,label:'Listen for the Firehouse Five Plus Two',fn:()=>{say('Dixieland jazz in the Firehouse Five Plus Two style: the band of Disney animators played at Disneyland with Walt\'s blessing and made a 1962 LP called At Disneyland. (Whether they play here today is not documented.)',5500);}});
+  m.uses.push({x:10.5,y:47.5,r:3,arc:2,label:'Listen for the Firehouse Five Plus Two',fn:()=>{say('Dixieland jazz in the Firehouse Five Plus Two style: the band of Disney animators played at Disneyland with Walt\'s blessing and made a 1962 LP called At Disneyland. (Whether they play here today is not documented.)',5500);}});
   m.uses.push({x:12.5,y:47.5,r:2.6,arc:2,label:'Listen for the Dapper Dans',fn:()=>say('The Dapper Dans, a barbershop quartet in striped jackets and straw boaters, have sung on Main Street since 1959.',5500)});
   m.uses.push({x:20,y:4.6,r:3.2,arc:1.2,label:'Look at Sleeping Beauty Castle',fn:()=>say('Sleeping Beauty Castle: only 77 feet tall, built in forced perspective so details shrink toward the top. Walt chose blue roofs to blend with the sky, and a Disney family coat of arms with three lions has hung over the archway since 1965. Fantasyland lies through the gate; it is not part of this build yet.',8000)});
   m.tick=flagTick;
