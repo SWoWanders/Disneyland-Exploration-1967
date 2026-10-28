@@ -2205,7 +2205,7 @@ addEventListener('keydown',e=>{if(G.paused&&e.key!=='Escape')return;G.keys[e.cod
 addEventListener('keyup',e=>{G.keys[e.code]=0;});
 let drag=null;
 function setupPointer(){
-  const cv=$('view');
+  const cv=(typeof R3!=='undefined'&&R3.on)?R3.cv:$('view');
   cv.addEventListener('mousedown',e=>{if(G.mode!=='play'&&G.mode!=='ride')return;if(document.pointerLockElement!==cv&&!('ontouchstart' in window))cv.requestPointerLock&&cv.requestPointerLock();});
   document.addEventListener('mousemove',e=>{if(document.pointerLockElement===cv){G.lookDX+=e.movementX;G.pl.pitch=Math.max(-70,Math.min(70,G.pl.pitch-e.movementY*.35));}});
   // touch
@@ -4025,7 +4025,7 @@ function r3Init(){
   if(typeof THREE==='undefined'||/classic/.test(location.search+location.hash))return false;
   try{
     const T=THREE;R3.coarse=!!(matchMedia&&matchMedia('(pointer:coarse)').matches);
-    const cv=document.createElement('canvas');cv.id='r3';cv.style.cssText='position:fixed;inset:0;width:100vw;height:100vh;display:block;background:#000;z-index:0';
+    const cv=document.createElement('canvas');cv.id='r3';cv.style.cssText='position:fixed;inset:0;width:100vw;height:100vh;display:block;background:#000;z-index:0;touch-action:none';
     document.body.insertBefore(cv,$('view'));
     const rd=new T.WebGLRenderer({canvas:cv,antialias:!R3.coarse,powerPreference:'high-performance',preserveDrawingBuffer:true});
     rd.setPixelRatio(Math.min(devicePixelRatio||1,R3.coarse?1.5:2));rd.setSize(innerWidth,innerHeight,false);
