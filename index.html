@@ -4066,7 +4066,7 @@ function r3FH(fi){const F=FLOOR;if(fi===F.sidewalk||fi===F.plaza||fi===F.tmlfloo
 /* ---- per-map scene ---- */
 /* ---- 3D shopfront architecture: projecting cornice, striped awning, pitched roof with chimneys ---- */
 function r3Extras(S,wd,f,x,y,h){
-  const sp=wd.spec;if(sp.style==='modern')return;const E=S.ex||(S.ex={cor:new Map(),awn:new Map(),roof:new Map(),chim:[]});
+  const sp=wd.spec;if(sp.style==='modern')return;const E=S.ex||(S.ex={cor:new Map(),awn:new Map(),roof:new Map(),chim:[],dorm:[],porch:[]});
   const n=f[4],A=f[2],B=f[3];                       // A,B = base corners (viewer's left,right); n outward normal
   const out=(p,d,yy)=>[p[0]+n[0]*d,yy,p[2]+n[2]*d];
   const trim=sp.trim||'#f1e9d6';
@@ -4075,6 +4075,7 @@ function r3Extras(S,wd,f,x,y,h){
   quad(cb,out(A,0,y0),out(B,0,y0),out(B,d,y0),out(A,d,y0),[0,-1,0]);                       // soffit (faces down)
   quad(cb,out(A,d,y0),out(B,d,y0),out(B,d,y1),out(A,d,y1),n);                              // front
   quad(cb,out(A,d,y1),out(B,d,y1),out(B,0,y1),out(A,0,y1),[0,1,0]);                         // top
+  if(sp.name==='CITY HALL'&&wd.ti===sp.door){E.porch.push([(A[0]+B[0])/2,(A[2]+B[2])/2,Math.atan2(n[0],n[2])]);}
   // awning over the shop window
   if(sp.awning){const k=sp.awning[0]+'|'+sp.awning[1];const ab=bkt(E.awn,k);const d2=.32,ya=.80,yb=.58;
     const uv=[0,0,1,0,1,1,0,1];
@@ -4082,6 +4083,10 @@ function r3Extras(S,wd,f,x,y,h){
     quad(ab,out(B,d2,yb),out(A,d2,yb),out(A,0,ya),out(B,0,ya),[-n[0]*.5,-.8,-n[2]*.5],uv);   // underside
     quad(ab,out(A,d2,yb-.1),out(B,d2,yb-.1),out(B,d2,yb),out(A,d2,yb),n,[0,0,1,0,1,.2,0,.2]); // valance
     E.awnC=E.awnC||{};E.awnC[k]=sp.awning;}
+  if(sp.mansard){const rb=bkt(E.roof,sp.mansard);const dI=.3,ry2=.36,Dp=1.5;const iA=out(A,-dI,h+ry2),iB=out(B,-dI,h+ry2),oA=[A[0]+n[0]*.1,h-.02,A[2]+n[2]*.1],oB=[B[0]+n[0]*.1,h-.02,B[2]+n[2]*.1];
+    quad(rb,oA,oB,iB,iA,[n[0]*.7,.7,n[2]*.7]);quad(rb,iA,iB,out(B,-Dp,h+ry2),out(A,-Dp,h+ry2),[0,1,0]);
+    // dormer on every tile: small gabled box + window
+    const cx=(A[0]+B[0])/2+n[0]*(-.12),cz=(A[2]+B[2])/2+n[2]*(-.12);E.dorm.push([cx,h+ry2*.55,cz,Math.atan2(n[0],n[2])]);return;}
   // roof: simple hip behind the facade, colour varied per tile
   const col=['#5b4b52','#6d3f35','#4f5258','#7a4a38'][(x*7+y*3+(sp.name||'').length)%4];const rb=bkt(E.roof,col);
   const D=1.6,ry=.42;const iA=out(A,-D,h),iB=out(B,-D,h),ri=(p,d,yy)=>[p[0]+n[0]*d,yy,p[2]+n[2]*d];
@@ -4099,6 +4104,19 @@ function r3Flush(S){
   for(const [k,b] of E.awn){const cols=E.awnC[k];const cv=document.createElement('canvas');cv.width=128;cv.height=32;const x=cv.getContext('2d');for(let i=0;i<8;i++){x.fillStyle=i%2?cols[1]:cols[0];x.fillRect(i*16,0,16,32);}
     const t=new T.CanvasTexture(cv);t.encoding=T.sRGBEncoding;t.wrapS=T.RepeatWrapping;const ms=new T.Mesh(bgeo(b),lam({map:t,side:T.DoubleSide}));ms.castShadow=true;ms.receiveShadow=true;sc.add(ms);}
   for(const [c,b] of E.roof){const ms=new T.Mesh(bgeo(b),lam({color:new T.Color(c),side:T.DoubleSide}));ms.castShadow=true;ms.receiveShadow=true;sc.add(ms);}
+  if(E.dorm&&E.dorm.length){const dg=new T.BoxGeometry(.34,.3,.22),rg=new T.ConeGeometry(.28,.2,4);rg.rotateY(Math.PI/4);rg.scale(1,1,.8);
+    const a=new T.InstancedMesh(dg,lam({color:0xf1e9d6}),E.dorm.length),b=new T.InstancedMesh(rg,lam({color:0x4a4048}),E.dorm.length),w=new T.InstancedMesh(new T.PlaneGeometry(.2,.2),new T.MeshLambertMaterial({color:0x3b4a5a,emissive:0x000000}),E.dorm.length);
+    const mt=new T.Matrix4(),R=new T.Matrix4(),Tr=new T.Matrix4();E.dorm.forEach((d,i)=>{R.makeRotationY(d[3]);Tr.makeTranslation(d[0],d[1],d[2]);mt.multiplyMatrices(Tr,R);a.setMatrixAt(i,mt);Tr.makeTranslation(d[0],d[1]+.25,d[2]);mt.multiplyMatrices(Tr,R);b.setMatrixAt(i,mt);
+      Tr.makeTranslation(d[0]+Math.sin(d[3])*.116,d[1]+.01,d[2]+Math.cos(d[3])*.116);mt.multiplyMatrices(Tr,R);w.setMatrixAt(i,mt);});
+    a.castShadow=b.castShadow=true;sc.add(a);sc.add(b);sc.add(w);}
+  for(const p of E.porch||[]){const g=new T.Group();const col=lam({color:0xf6f1e4});
+    const slab=new T.Mesh(new T.BoxGeometry(1.1,.06,.55),col);slab.position.set(0,.84,.28);g.add(slab);
+    for(const sx of [-.48,.48]){const c=new T.Mesh(new T.CylinderGeometry(.035,.04,.84,10),col);c.position.set(sx,.42,.5);g.add(c);}
+    const floor=new T.Mesh(new T.BoxGeometry(1.1,.04,.55),lam({color:0xbdb5a4}));floor.position.set(0,.06,.28);g.add(floor);
+    for(let i=0;i<=10;i++){const b=new T.Mesh(new T.CylinderGeometry(.01,.01,.22,5),lam({color:0x222222}));b.position.set(-.5+i*.1,.97,.55);g.add(b);}
+    const rail=new T.Mesh(new T.BoxGeometry(1.0,.02,.02),lam({color:0x222222}));rail.position.set(0,1.08,.55);g.add(rail);
+    for(const sx of [-1,1]){const sr=new T.Mesh(new T.BoxGeometry(.02,.02,.5),lam({color:0x222222}));sr.position.set(sx*.5,1.08,.3);g.add(sr);}
+    g.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});g.position.set(p[0],0,p[1]);g.rotation.y=p[2];sc.add(g);}
   if(E.chim.length){const g=new T.BoxGeometry(.16,.4,.16);const im=new T.InstancedMesh(g,lam({color:0x8a4a38}),E.chim.length);const mt=new T.Matrix4();E.chim.forEach((p,i)=>{mt.makeTranslation(p[0],p[1]+.15,p[2]);im.setMatrixAt(i,mt);});im.castShadow=true;sc.add(im);}
 }
 function r3Scene(m){
@@ -4245,6 +4263,25 @@ function r3Props(){
     const cols=[0xe8453c,0xf2c230,0xf6f1e4,0xd46aa6,0xe8873a,0x7a5ac8],leaf=L(0x3f7a30);const mound=new T.Mesh(new T.SphereGeometry(.2,10,6),leaf);mound.scale.set(w*2.1,.35,d*1.4);mound.position.y=.08;g.add(mound);
     const im=new T.InstancedMesh(new T.IcosahedronGeometry(.032,0),L(0xffffff),34);const mt=new T.Matrix4(),cc=new T.Color();let sd=(s.x*91+s.y*17)|0;const rn=()=>{sd=(sd*16807)%2147483647;return sd/2147483647;};
     for(let i=0;i<34;i++){mt.makeTranslation((rn()-.5)*(w-.1),.15+rn()*.04,(rn()-.5)*(d-.1));im.setMatrixAt(i,mt);im.setColorAt(i,cc.setHex(cols[(rn()*6)|0]));}g.add(im);return g;};
+  const slateM=L(0x4a4048),trimM=L(0xf1e9d6),brickM=L(0x9a4a3a);
+  const clockTex=(()=>{const c=document.createElement('canvas');c.width=128;c.height=128;const x=c.getContext('2d');x.fillStyle='#f1e9d6';x.fillRect(0,0,128,128);x.fillStyle='#fffdf4';x.beginPath();x.arc(64,64,52,0,7);x.fill();x.strokeStyle='#2a2118';x.lineWidth=4;x.stroke();x.lineWidth=2;for(let i=0;i<12;i++){const a=i*Math.PI/6;x.beginPath();x.moveTo(64+Math.sin(a)*42,64-Math.cos(a)*42);x.lineTo(64+Math.sin(a)*49,64-Math.cos(a)*49);x.stroke();}x.lineWidth=4;x.beginPath();x.moveTo(64,64);x.lineTo(64,28);x.stroke();x.lineWidth=3;x.beginPath();x.moveTo(64,64);x.lineTo(86,74);x.stroke();const t=new T.CanvasTexture(c);t.encoding=T.sRGBEncoding;return t;})();
+  P.cupola=(s)=>{const g=new T.Group();const y0=2.0;const base=box(.9,.18,.9,trimM);base.position.y=y0+.09;g.add(base);const b=box(.72,.62,.72,trimM);b.position.y=y0+.49;g.add(b);
+    for(let i=0;i<4;i++){const cl=new T.Mesh(new T.PlaneGeometry(.42,.42),new T.MeshLambertMaterial({map:clockTex}));cl.position.set(Math.sin(i*Math.PI/2)*.365,y0+.5,Math.cos(i*Math.PI/2)*.365);cl.rotation.y=i*Math.PI/2;g.add(cl);}
+    const cor=box(.84,.07,.84,trimM);cor.position.y=y0+.84;g.add(cor);const dome=new T.Mesh(new T.ConeGeometry(.5,.62,4),slateM);dome.rotation.y=Math.PI/4;dome.position.y=y0+1.19;dome.castShadow=true;g.add(dome);
+    const sp=cyl(.012,.02,.5,L(0xd4b25a),6);sp.position.y=y0+1.7;g.add(sp);const bl=new T.Mesh(new T.SphereGeometry(.035,8,6),L(0xd4b25a));bl.position.y=y0+1.42;g.add(bl);return g;};
+  P.firetower=(s)=>{const g=new T.Group();const y0=2.0;const b=box(.8,.9,.8,brickM);b.position.y=y0+.45;g.add(b);const c1=box(.9,.07,.9,trimM);c1.position.y=y0+.93;g.add(c1);
+    for(let i=0;i<4;i++){const w=new T.Mesh(new T.PlaneGeometry(.2,.34),new T.MeshLambertMaterial({color:0x3b4a5a}));w.position.set(Math.sin(i*Math.PI/2)*.405,y0+.5,Math.cos(i*Math.PI/2)*.405);w.rotation.y=i*Math.PI/2;g.add(w);}
+    const ro=new T.Mesh(new T.ConeGeometry(.62,.55,4),slateM);ro.rotation.y=Math.PI/4;ro.position.y=y0+1.2;ro.castShadow=true;g.add(ro);const sp=cyl(.01,.015,.4,L(0xd4b25a),6);sp.position.y=y0+1.7;g.add(sp);return g;};
+  P.cannon=(s)=>{const g=new T.Group();const br=L(0x7a5a2a),dk=L(0x3a2a1a);const bar=cyl(.05,.065,.62,L(0x6b5a30),12);bar.rotation.z=Math.PI/2;bar.position.set(.12,.2,0);bar.rotation.z=Math.PI/2-.12;g.add(bar);
+    const cap=new T.Mesh(new T.SphereGeometry(.065,10,8),L(0x6b5a30));cap.position.set(-.18,.19,0);g.add(cap);
+    for(const sz of [-.14,.14]){const wh=cyl(.17,.17,.05,dk,16);wh.rotation.x=Math.PI/2;wh.position.set(0,.17,sz);g.add(wh);}
+    const tr=box(.5,.04,.2,br);tr.position.set(-.08,.2,0);g.add(tr);const trail=box(.5,.04,.1,br);trail.position.set(-.45,.1,0);trail.rotation.z=.2;g.add(trail);return g;};
+  P.popcorn=(s)=>{const g=new T.Group();const body=box(.62,.42,.42,L(0xf4efe2));body.position.y=.38;g.add(body);
+    for(let i=0;i<6;i++){const st=box(.1,.42,.43,L(0xb5302a));st.position.set(-.26+i*.105,.38,0);g.add(st);}
+    const gl=box(.54,.2,.01,L(0x9fc4d8,{transparent:true,opacity:.6}));gl.position.set(0,.5,.22);g.add(gl);
+    const roof=new T.Mesh(new T.ConeGeometry(.5,.22,4),L(0xb5302a));roof.rotation.y=Math.PI/4;roof.scale.set(1.1,1,.8);roof.position.y=.7;g.add(roof);
+    for(const sx of [-.3,.3]){const w=cyl(.1,.1,.04,L(0x222222),12);w.rotation.x=Math.PI/2;w.position.set(sx,.1,.24);g.add(w);const w2=w.clone();w2.position.z=-.24;g.add(w2);}
+    const pc=new T.Mesh(new T.SphereGeometry(.12,8,6),L(0xfff2c0));pc.position.set(0,.62,0);pc.scale.set(1.2,.7,1);g.add(pc);return g;};
   P.castle=(s)=>{const g=r3Merge(r3CastleFront());g.scale.setScalar(.17);return g;};
   P.castleback=(s)=>{const g=r3Merge(r3CastleBack());g.scale.setScalar(.17);return g;};
   R3.P=P;return P;
@@ -4260,7 +4297,7 @@ function r3Merge(root){
     const ms=new T.Mesh(g,e.mt);ms.castShadow=true;ms.receiveShadow=true;out.add(ms);}
   return out;
 }
-const R3_PROPS=['lamp','mlamp','tree','bench','bin','bush','castle','castleback','flagpole','flagpole_low','flowerbed'];
+const R3_PROPS=['lamp','mlamp','tree','bench','bin','bush','castle','castleback','flagpole','flagpole_low','flowerbed','cupola','firetower','cannon','popcorn'];
 /* ---- main render ---- */
 function render3(m,pl,sprites){
   if(!R3.on)return;const vv=$('view');if(vv.style.visibility!=='hidden')vv.style.visibility='hidden';R3.cv.style.display='block';const T=THREE,rd=R3.rd,cam=R3.cam,S=r3Scene(m);const asp=innerWidth/innerHeight;
