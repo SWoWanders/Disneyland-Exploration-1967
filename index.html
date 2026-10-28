@@ -4030,7 +4030,7 @@ function r3Init(){
     const rd=new T.WebGLRenderer({canvas:cv,antialias:!R3.coarse,powerPreference:'high-performance',preserveDrawingBuffer:true});
     rd.setPixelRatio(Math.min(devicePixelRatio||1,R3.coarse?1.5:2));rd.setSize(innerWidth,innerHeight,false);
     rd.outputEncoding=T.sRGBEncoding;rd.shadowMap.enabled=!R3.coarse;rd.shadowMap.type=T.PCFSoftShadowMap;
-    R3.cv=cv;R3.rd=rd;R3.cam=new T.PerspectiveCamera(50,innerWidth/innerHeight,.03,600);R3.cam.rotation.order='YXZ';
+    R3.cv=cv;R3.rd=rd;R3.cam=new T.PerspectiveCamera(50,innerWidth/innerHeight,.08,400);R3.cam.rotation.order='YXZ';
     R3.on=true;$('view').style.visibility='hidden';
     addEventListener('resize',()=>{rd.setPixelRatio(Math.min(devicePixelRatio||1,R3.coarse?1.5:2));rd.setSize(innerWidth,innerHeight,false);});
     return true;
@@ -4277,7 +4277,7 @@ function r3Props(){
     for(const sz of [-.14,.14]){const wh=cyl(.17,.17,.05,dk,16);wh.rotation.x=Math.PI/2;wh.position.set(0,.17,sz);g.add(wh);}
     const tr=box(.5,.04,.2,br);tr.position.set(-.08,.2,0);g.add(tr);const trail=box(.5,.04,.1,br);trail.position.set(-.45,.1,0);trail.rotation.z=.2;g.add(trail);return g;};
   P.popcorn=(s)=>{const g=new T.Group();const body=box(.62,.42,.42,L(0xf4efe2));body.position.y=.38;g.add(body);
-    for(let i=0;i<6;i++){const st=box(.1,.42,.43,L(0xb5302a));st.position.set(-.26+i*.105,.38,0);g.add(st);}
+    for(let i=0;i<6;i++){const st=box(.098,.42,.43,L(0xb5302a));st.position.set(-.2575+i*.103,.38,0);g.add(st);}
     const gl=box(.54,.2,.01,L(0x9fc4d8,{transparent:true,opacity:.6}));gl.position.set(0,.5,.22);g.add(gl);
     const roof=new T.Mesh(new T.ConeGeometry(.5,.22,4),L(0xb5302a));roof.rotation.y=Math.PI/4;roof.scale.set(1.1,1,.8);roof.position.y=.7;g.add(roof);
     for(const sx of [-.3,.3]){const w=cyl(.1,.1,.04,L(0x222222),12);w.rotation.x=Math.PI/2;w.position.set(sx,.1,.24);g.add(w);const w2=w.clone();w2.position.z=-.24;g.add(w2);}
