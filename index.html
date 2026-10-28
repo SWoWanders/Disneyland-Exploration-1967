@@ -398,7 +398,7 @@ function initSprites(){
       x.fillStyle='#c0252a';x.fillRect(6,26,8,5);x.fillRect(42,26,8,5);x.fillStyle='#e8e8e8';x.fillRect(6,36,44,4);x.fillStyle='#161616';x.fillRect(6,38,8,10);x.fillRect(42,38,8,10);}
     return c;}
   const carCols=[['#c9382a','#8a2018'],['#2f6fa8','#1c3f64'],['#f2e6c0','#b8a878'],['#3a8a5a','#1f5a38'],['#e8b53a','#a07a1c'],['#6a6a72','#3c3c44'],['#d9d4c8','#8a867a'],['#2a2a30','#000'],['#e8806a','#a84a3a'],['#5aa8b8','#2a6878']];
-  SPR.cars=carCols.map(([b,r])=>{const sd=carDraw(b,r,'side');return {dirs:{R:{tex:toTex(sd),sw:1.7},L:{tex:toTex(flipC(sd)),sw:1.7},front:{tex:toTex(carDraw(b,r,'front')),sw:.85},back:{tex:toTex(carDraw(b,r,'back')),sw:.85}},sw:1.7,sh:.78,r:.5};});
+  SPR.cars=carCols.map(([b,r])=>{const sd=carDraw(b,r,'side');return {col:[b,r],dirs:{R:{tex:toTex(sd),sw:1.7},L:{tex:toTex(flipC(sd)),sw:1.7},front:{tex:toTex(carDraw(b,r,'front')),sw:.85},back:{tex:toTex(carDraw(b,r,'back')),sw:.85}},sw:1.7,sh:.78,r:.5};});
   (function(){const c=mk(300,60),x=c.getContext('2d'); // tractor + two open trailers, faces RIGHT
     x.fillStyle='rgba(0,0,0,.25)';x.fillRect(4,54,290,4);
     x.fillStyle='#e8453c';x.fillRect(236,22,50,26);x.fillStyle='#222';x.fillRect(246,10,5,14);x.fillStyle='#f2c230';x.fillRect(268,14,8,8);x.fillStyle='#8a8a8a';x.fillRect(256,14,10,3);
@@ -4118,6 +4118,7 @@ function r3Scene(m){
     const faces=[[x,y-1,[x+1,0,y],[x,0,y],[0,0,-1],[x+1,h,y],[x,h,y]],[x,y+1,[x,0,y+1],[x+1,0,y+1],[0,0,1],[x,h,y+1],[x+1,h,y+1]],
       [x+1,y,[x+1,0,y+1],[x+1,0,y],[1,0,0],[x+1,h,y+1],[x+1,h,y]],[x-1,y,[x,0,y],[x,0,y+1],[-1,0,0],[x,h,y],[x,h,y+1]]];
     for(const f of faces){if(hides(nb(f[0],f[1]),h))continue;quad(bkt(walls,id),f[2],f[3],f[6],f[5],f[4]);if(wd.spec&&h>=1.5)r3Extras(S,wd,f,x,y,h);}
+    if(wd.label==='Ticket Booth')(S.booths=S.booths||[]).push([x+.5,h,y+.5]);
     const topc=wd.topc||(h>=1.5?'roof':'cap');if(!wd.transp){quad(bkt(tops,topc),[x,h,y+1],[x+1,h,y+1],[x+1,h,y],[x,h,y],[0,1,0]);}
   }
   const lam=(o)=>new T.MeshLambertMaterial(o);
@@ -4145,12 +4146,61 @@ function r3Scene(m){
     const mt=lam({map:r3T(wd.tex,false),side:T.DoubleSide,transparent:!!wd.transp,alphaTest:wd.transp?.5:0});const ms=new T.Mesh(g,mt);ms.castShadow=true;
     if(alongX){ms.position.set(d.x,0,d.y+.5);}else{ms.rotation.y=Math.PI/2;ms.position.set(d.x+.5,0,d.y);}
     d.mesh=ms;d.alongX=alongX;sc.add(ms);}
+  r3Static(m,S);
+  if(S.booths){const cg=new T.ConeGeometry(.88,.42,4);cg.rotateY(Math.PI/4);const im=new T.InstancedMesh(cg,lam({color:0x2d6f5a}),S.booths.length);const mt=new T.Matrix4();S.booths.forEach((p,i)=>{mt.makeTranslation(p[0],p[1]+.21,p[2]);im.setMatrixAt(i,mt);});im.castShadow=true;sc.add(im);
+    const sg=new T.BoxGeometry(1.12,.07,1.12);const im2=new T.InstancedMesh(sg,lam({color:0xf1e8d0}),S.booths.length);S.booths.forEach((p,i)=>{mt.makeTranslation(p[0],p[1]+.02,p[2]);im2.setMatrixAt(i,mt);});im2.castShadow=true;sc.add(im2);}
   // lights
   S.hemi=new T.HemisphereLight(0xdfeeff,0x8a8a6a,1.0);sc.add(S.hemi);
   S.sun=new T.DirectionalLight(0xfff2d8,.9);S.sun.position.set(-30,50,-18);sc.add(S.sun);sc.add(S.sun.target);
   if(R3.rd.shadowMap.enabled){const s=S.sun;s.castShadow=true;s.shadow.mapSize.set(2048,2048);const c=s.shadow.camera;c.left=-34;c.right=34;c.top=34;c.bottom=-34;c.near=1;c.far=140;s.shadow.bias=-.0006;s.shadow.normalBias=.03;}
   S.plights=[];for(let i=0;i<5;i++){const l=new T.PointLight(0xffd890,0,7,1.6);sc.add(l);S.plights.push(l);}
   return S;
+}
+/* ---- static sprites turned into instanced 3D: flower mosaics, parked cars; plus the station pavilion ---- */
+function r3Static(m,S){
+  const T=THREE,sc=S.sc;S.skip=new Set();
+  const FL={fP:0x3b2a78,fW:0xf4f0e6,fR:0xc8262a,fK:0xe58aa8};
+  for(const k in FL){const list=m.sprites.filter(s=>SPR[k]&&s.def===SPR[k]);if(!list.length)continue;
+    const g=new T.IcosahedronGeometry(.066,0);g.scale(1,.5,1);const im=new T.InstancedMesh(g,new T.MeshLambertMaterial({color:FL[k]}),list.length);const mt=new T.Matrix4();
+    list.forEach((s,i)=>{const cx=s.x|0,cy=s.y|0;const fh=r3FH(m.floor[Math.min(m.h-1,Math.max(0,cy))*m.w+Math.min(m.w-1,Math.max(0,cx))]);mt.makeTranslation(s.x,fh+.06,s.y);im.setMatrixAt(i,mt);S.skip.add(s);});
+    im.receiveShadow=true;sc.add(im);}
+  const cars=m.sprites.filter(s=>SPR.cars&&SPR.cars.indexOf(s.def)>=0&&!s.dv);
+  if(cars.length){const n=cars.length;const mk=(g,c)=>{const im=new T.InstancedMesh(g,new T.MeshLambertMaterial({color:c}),n);im.castShadow=true;im.receiveShadow=true;sc.add(im);return im;};
+    const body=mk(new T.BoxGeometry(1.5,.2,.62),0xffffff),skirt=mk(new T.BoxGeometry(1.46,.07,.58),0x222222),cab=mk(new T.BoxGeometry(.78,.17,.54),0x7f9db0),roof=mk(new T.BoxGeometry(.84,.03,.58),0xffffff),
+      wh=mk(new T.CylinderGeometry(.095,.095,.07,10),0x161616),bump=mk(new T.BoxGeometry(1.56,.04,.5),0xd8d8d8),whs=[];
+    const M=new T.Matrix4(),R=new T.Matrix4(),P=new T.Matrix4(),c=new T.Color();
+    const place=(im,i,s,lx,ly,lz,rotZ)=>{R.makeRotationY(-(s.heading||0));if(rotZ){const Z=new T.Matrix4().makeRotationX(Math.PI/2);R.multiply(Z);}P.makeTranslation(0,0,0);const px=s.x+Math.cos(s.heading||0)*lx-Math.sin(s.heading||0)*lz,pz=s.y+Math.sin(s.heading||0)*lx+Math.cos(s.heading||0)*lz;M.makeTranslation(px,ly,pz).multiply(R);im.setMatrixAt(i,M);};
+    cars.forEach((s,i)=>{const cl=s.def.col||['#888','#444'];S.skip.add(s);
+      place(body,i,s,0,.2,0);body.setColorAt(i,c.set(cl[0]));place(skirt,i,s,0,.1,0);place(cab,i,s,-.05,.38,0);place(roof,i,s,-.05,.475,0);roof.setColorAt(i,c.set(cl[1]));place(bump,i,s,0,.14,0);});
+    // wheels: 4 per car, separate instanced mesh
+    const wh4=new T.InstancedMesh(wh.geometry,wh.material,n*4);wh4.castShadow=true;sc.add(wh4);sc.remove(wh);let k=0;
+    cars.forEach(s=>{for(const [lx,lz] of [[.5,.3],[.5,-.3],[-.5,.3],[-.5,-.3]]){R.makeRotationY(-(s.heading||0));const Z=new T.Matrix4().makeRotationX(Math.PI/2);R.multiply(Z);const px=s.x+Math.cos(s.heading||0)*lx-Math.sin(s.heading||0)*lz,pz=s.y+Math.sin(s.heading||0)*lx+Math.cos(s.heading||0)*lz;M.makeTranslation(px,.1,pz).multiply(R);wh4.setMatrixAt(k++,M);}});
+    [body,roof].forEach(im=>{im.instanceColor&&(im.instanceColor.needsUpdate=true);});}
+  // Main Street Station pavilion (gabled centre with clock): gate side faces +Z (south), park side faces -Z (north)
+  if(m.key==='gate')r3Pavilion(S,20,4,1);
+  if(m.key==='park')r3Pavilion(S,19.5,59,-1);
+}
+function r3Pavilion(S,cx,z0,dir){
+  const T=THREE,g=new T.Group(),lam=(c,o)=>new T.MeshLambertMaterial(Object.assign({color:c},o||{}));
+  const brick=lam(0x9a5a3a),trim=lam(0xf1e9d6),slate=lam(0x4f4a52,{side:T.DoubleSide});
+  const W=6,Hs=2.0,Hp=2.75,D=.9;
+  const body=new T.Mesh(new T.BoxGeometry(W,Hp-Hs,D),brick);body.position.set(0,(Hp+Hs)/2,0);g.add(body);
+  const cor=new T.Mesh(new T.BoxGeometry(W+.3,.12,D+.3),trim);cor.position.set(0,Hp+.06,0);g.add(cor);
+  // gable roof along x with triangular pediment front
+  const sh=new T.Shape();sh.moveTo(-W/2,0);sh.lineTo(W/2,0);sh.lineTo(0,1.15);sh.closePath();
+  const roofm=new T.Mesh(new T.ExtrudeGeometry(sh,{depth:D+.1,bevelEnabled:false}),slate);roofm.position.set(0,Hp+.12,-(D+.1)/2);g.add(roofm);
+  // clock + arched window on the front of the pediment
+  const fc=document.createElement('canvas');fc.width=256;fc.height=256;const x=fc.getContext('2d');x.fillStyle='#9a5a3a';x.fillRect(0,0,256,256);x.fillStyle='#f1e9d6';x.beginPath();x.arc(128,128,100,0,7);x.fill();x.fillStyle='#fffdf4';x.beginPath();x.arc(128,128,88,0,7);x.fill();x.strokeStyle='#2a2118';x.lineWidth=5;x.stroke();
+  x.lineWidth=3;for(let i=0;i<12;i++){const a=i*Math.PI/6;x.beginPath();x.moveTo(128+Math.sin(a)*74,128-Math.cos(a)*74);x.lineTo(128+Math.sin(a)*84,128-Math.cos(a)*84);x.stroke();}
+  x.lineWidth=7;x.beginPath();x.moveTo(128,128);x.lineTo(128,64);x.stroke();x.lineWidth=5;x.beginPath();x.moveTo(128,128);x.lineTo(168,142);x.stroke();
+  const ct=new T.CanvasTexture(fc);ct.encoding=T.sRGBEncoding;const clock=new T.Mesh(new T.PlaneGeometry(.8,.8),new T.MeshLambertMaterial({map:ct}));clock.position.set(0,Hp+.55,(D+.1)/2+.01);g.add(clock);
+  const clock2=clock.clone();clock2.rotation.y=Math.PI;clock2.position.z=-(D+.1)/2-.01;g.add(clock2);
+  // cupola + spire on the ridge
+  const cup=new T.Mesh(new T.BoxGeometry(.5,.45,.5),trim);cup.position.set(0,Hp+1.35,0);g.add(cup);
+  const cone=new T.Mesh(new T.ConeGeometry(.42,.8,8),slate);cone.position.set(0,Hp+2.0,0);g.add(cone);
+  const sp=new T.Mesh(new T.CylinderGeometry(.01,.02,.5,6),lam(0xd4b25a));sp.position.set(0,Hp+2.6,0);g.add(sp);
+  g.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});
+  g.position.set(cx,0,z0+ (dir>0?-.1:1.1));if(dir<0)g.rotation.y=0;S.sc.add(g);
 }
 /* ---- sky (follows the camera) ---- */
 function r3Sky(){
@@ -4238,7 +4288,7 @@ function render3(m,pl,sprites){
   const sd=[];
   // sprites
   const cx=pl.x,cz=pl.y;const alive=new Set();const props=r3Props();
-  for(const s of sprites){if(s.hidden)continue;const sd0=s.def;alive.add(s);
+  for(const s of sprites){if(s.hidden||(S.skip&&S.skip.has(s)))continue;const sd0=s.def;alive.add(s);
     let rec=S.spr.get(s);
     const pk=R3_PROPS.find(k=>SPR[k]===sd0);
     if(!rec){
