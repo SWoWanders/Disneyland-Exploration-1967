@@ -1202,7 +1202,7 @@ function buildGate(){
   bx.fillStyle='#4a3a2a';bx.fillRect(18,78,92,62);bx.fillStyle='#9fc4d8';bx.fillRect(22,82,84,40);bx.fillStyle='rgba(255,255,255,.35)';bx.fillRect(22,82,20,40);bx.fillStyle='#7a5a32';bx.fillRect(14,126,100,10);bx.fillStyle='#2b2b2b';bx.fillRect(54,100,20,22);
   bx.fillStyle='#161616';bx.fillRect(14,146,100,38);bx.fillStyle='#e8c860';bx.font='bold 11px Georgia,serif';bx.fillText('ADMISSION  $1.75',64,157);bx.font='10px Georgia,serif';bx.fillText('10-RIDE BOOK  $3.25',64,172);
   const booth=defWall({tex:toTex(bc),h:1.5,label:'Ticket Booth'});
-  for(const x of [8,10,12,27,29,31]){const id=defWall(Object.assign({},WALLS[booth],{h:1.5}));put(m,x,12,id);
+  for(const x of [6,8,10,12,14,25,27,29,31,33]){const id=defWall(Object.assign({},WALLS[booth],{h:1.5}));put(m,x,12,id);
     WALLS[id].use={label:'Buy admission at the ticket window',fn:()=>openShopUI({name:'Ticket Booth',booth:true,menu:[],blurb:'Admission $1.75 (no rides). Big 10 books $3.25 with A-E coupons. The cast member stamps no hands: guests simply pass the turnstile.'})};}
   rect(m,17,12,22,12,0);
   // flag poles and lamps on the Esplanade
@@ -4214,7 +4214,11 @@ function r3Scene(m){
   if(S.booths){const mt=new T.Matrix4();const n=S.booths.length;
     const rg=new T.BoxGeometry(1.16,.08,1.16);const im=new T.InstancedMesh(rg,lam({color:0xf6f1e2}),n);S.booths.forEach((p,i)=>{mt.makeTranslation(p[0],p[1]+.05,p[2]);im.setMatrixAt(i,mt);});im.castShadow=true;sc.add(im);
     const cg2=new T.BoxGeometry(1.0,.1,1.0);const im3=new T.InstancedMesh(cg2,lam({color:0xe6dcc0}),n);S.booths.forEach((p,i)=>{mt.makeTranslation(p[0],p[1]+.12,p[2]);im3.setMatrixAt(i,mt);});im3.castShadow=true;sc.add(im3);
-    const dg=new T.CylinderGeometry(.17,.17,.03,16);dg.rotateX(Math.PI/2);const im4=new T.InstancedMesh(dg,lam({color:0xfbf7ea}),n);S.booths.forEach((p,i)=>{mt.makeTranslation(p[0],p[1]+.3,p[2]+.52);im4.setMatrixAt(i,mt);});sc.add(im4);}
+    const L10='DISNEYLAND',ord=S.booths.map((p,i)=>i).sort((i,j)=>S.booths[i][0]-S.booths[j][0]);
+    ord.forEach((bi,k)=>{const p=S.booths[bi],c=document.createElement('canvas');c.width=c.height=128;const x=c.getContext('2d');x.fillStyle='#fbf7ea';x.beginPath();x.arc(64,64,62,0,7);x.fill();x.strokeStyle='#b5302a';x.lineWidth=6;x.beginPath();x.arc(64,64,54,0,7);x.stroke();
+      x.fillStyle='#b5302a';x.font='bold 78px Georgia,serif';x.textAlign='center';x.textBaseline='middle';x.fillText(L10[k]||'',64,70);const t=new T.CanvasTexture(c);t.encoding=T.sRGBEncoding;t.anisotropy=8;
+      const d=new T.Mesh(new T.CircleGeometry(.2,24),new T.MeshLambertMaterial({map:t,side:T.DoubleSide}));d.position.set(p[0],p[1]+.34,p[2]);sc.add(d);
+      const st=new T.Mesh(new T.CylinderGeometry(.012,.012,.2,6),lam({color:0x8a8a82}));st.position.set(p[0],p[1]+.2,p[2]);sc.add(st);});}
   // lights
   S.hemi=new T.HemisphereLight(0xdfeeff,0x8a8a6a,1.0);sc.add(S.hemi);
   S.sun=new T.DirectionalLight(0xfff2d8,.9);S.sun.position.set(-30,50,-18);sc.add(S.sun);sc.add(S.sun.target);
@@ -4281,6 +4285,13 @@ function r3Pavilion(S,cx,z0,dir){
   for(const [x0,x1] of [[-8,-3.8],[2.05,8]]){const w=x1-x0,xc=(x0+x1)/2;bx(w,.07,D+.5,trim,xc,Hs+.035,0);
     const sh=new T.Shape();sh.moveTo(-(D+.5)/2,0);sh.lineTo((D+.5)/2,0);sh.lineTo(.12,.22);sh.lineTo(-.12,.22);sh.closePath();
     const geo=new T.ExtrudeGeometry(sh,{depth:w,bevelEnabled:false});geo.rotateY(-Math.PI/2);geo.translate(x1,0,0);const m=add(new T.Mesh(geo,slate));m.position.set(0,Hs+.07,0);}
+  // arcade columns under the wing eaves
+  {const cs=[];for(const [x0,x1] of [[-8,-3.8],[2.05,8]])for(let xx=x0+.25;xx<x1;xx+=1.05)for(const sz of [1,-1])cs.push([xx,sz*(D/2+.2)]);
+   const im=new T.InstancedMesh(new T.BoxGeometry(.08,Hs-.02,.08),trim,cs.length),mt=new T.Matrix4();cs.forEach((c,i)=>{mt.makeTranslation(c[0],(Hs-.02)/2,c[1]);im.setMatrixAt(i,mt);});im.castShadow=true;g.add(im);}
+  // iron cresting ring and finial balls at the base of the tower spire
+  {const iron=lam(0x1f2c26);const r=.5;for(const [w,d,px,pz] of [[2*r,.03,0,r],[2*r,.03,0,-r],[.03,2*r,r,0],[.03,2*r,-r,0]]){bx(w,.09,d,iron,tx+px,ty+.14,pz);}
+   for(const [px,pz] of [[r,r],[-r,r],[r,-r],[-r,-r]]){const b=add(new T.Mesh(new T.SphereGeometry(.04,8,6),gold));b.position.set(tx+px,ty+.2,pz);}
+   const b2=add(new T.Mesh(new T.SphereGeometry(.05,8,6),gold));b2.position.set(tx,ty+1.48,0);}
   g.traverse(o=>{if(o.isMesh){o.castShadow=true;}});
   g.position.set(cx,0,z0+ (dir>0?-.1:1.1));if(dir<0)g.rotation.y=0;S.sc.add(g);
 }
