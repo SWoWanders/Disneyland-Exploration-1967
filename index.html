@@ -4391,7 +4391,7 @@ function render3(m,pl,sprites){
   // doors
   for(const d of S.doors){const o=m.doorOpen[d.y*m.w+d.x]||0;d.mesh.visible=o<.999;if(d.alongX)d.mesh.position.x=d.x+o;else d.mesh.position.z=d.y+o;}
   // sky
-  if(m.sky){const sy=r3Sky();if(S.sc.children.indexOf(sy.grp)<0)S.sc.add(sy.grp);sy.grp.visible=true;sy.grp.position.copy(cam.position);
+  if(m.sky){const sy=r3Sky();if(S.sc.children.indexOf(sy.grp)<0)S.sc.add(sy.grp);sy.grp.visible=true;sy.grp.scale.setScalar(.6);sy.grp.position.copy(cam.position);
     const pt=m.pano||Eng.pano;if(pt&&sy.last!==pt){const tx=r3T(pt,false);tx.wrapS=T.RepeatWrapping;tx.repeat.set(1,.93);tx.offset.set(0,.0);sy.cm.map=tx;sy.cm.needsUpdate=true;sy.last=pt;}
     const k=sk?[sk[0]/256,sk[1]/256,sk[2]/256]:[1,1,1];sy.cm.color.setRGB(k[0],k[1],k[2]);sy.dome.material.color.setRGB(k[0],k[1],k[2]);
     sy.cyl.rotation.y=Math.PI*.5;S.sc.background=null;}
