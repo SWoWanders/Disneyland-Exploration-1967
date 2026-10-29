@@ -733,56 +733,35 @@ for(const k in SPEC){if(k!=='station')SPEC[k].h=2.75;}
 function shopWalls(spec,key,shop){const sp=SPEC[spec];return makeShopWalls(sp,key?{shop:key,label:'Enter '+SHOPS[key].name}:null);}
 function decorWalls(spec){const sp=Object.assign({},SPEC[spec],{door:null});return makeShopWalls(sp,null);}
 
+const PARK_DY=25; // rows inserted between the castle and Main Street so the castle approach, moat and hub match the scan
 function buildPark(){
   const m=makeMap(40,64);m.key='park';m.name='Main Street, U.S.A.';m.sky=true;m.outFloor=FLOOR.grass;m.fogC=[205,222,236];m.fogD=46;m.fogMax=.62;m.amb=1;m.zone='mainstreet';
   rect(m,0,0,39,63,W.berm);m.floor.fill(FLOOR.grass);
-  // ---------- Central Plaza (Hub) ----------
-  rect(m,0,0,39,3,0);rect(m,6,4,33,17,0);frect(m,6,4,33,17,'plaza');
-  rect(m,14,4,25,6,W.inv);frect(m,14,4,25,6,'water');rect(m,19,4,20,6,0);frect(m,19,4,20,6,'plaza');rect(m,19,3,20,3,0);frect(m,19,3,20,3,'plaza');m.tri.push({x0:19.05,y0:2.7,x1:20.95,y1:3.7,go:{map:'fant',x:20,y:23.4,a:-Math.PI/2}});
-  rect(m,12,3,18,3,W.inv);rect(m,21,3,27,3,W.inv);
-  // moat edge planters
-  rect(m,13,7,18,7,W.planter);rect(m,21,7,26,7,W.planter);frect(m,13,8,18,8,'grass');frect(m,21,8,26,8,'grass');
-  // central planter (contents of the 1967 planter unverified: plain flower bed, no Partners statue - that arrived in 1993)
-  rect(m,18,9,21,12,W.planter);rect(m,19,10,20,11,0);frect(m,19,10,20,11,'flowers');
-  // plaza boundary
-  rect(m,6,4,6,8,W.tallhedge);rect(m,6,13,6,17,W.tallhedge);rect(m,33,4,33,7,W.tallhedge);rect(m,33,13,33,17,W.tallhedge);
-  rect(m,7,4,12,4,W.tallhedge);rect(m,27,4,32,4,W.tallhedge);rect(m,7,17,14,17,W.tallhedge);rect(m,25,17,32,17,W.tallhedge);
-  frect(m,7,5,12,6,'grass');frect(m,27,5,32,6,'grass');
-  // Plaza Inn (east side of the plaza, facing west) - exterior only in this build
-  facade(m,'E',33,8,decorWalls('plazainn'));
-  // Tomorrowland gate (east) and Frontierland gate (north-west) and Adventureland bridge (west)
-  rect(m,34,10,38,12,0);frect(m,34,10,38,12,'plaza');rect(m,34,9,38,9,W.tallhedge);rect(m,34,13,38,13,W.tallhedge);
-  const tmlSign=signWall('TOMORROWLAND','#dfe6ee','#2d4f94',2.0,'Now open: New Tomorrowland');put(m,35,9,tmlSign);put(m,35,13,tmlSign);
-  m.tri.push({x0:38.3,y0:9.8,x1:39.9,y1:12.9,go:{map:'tml',x:3.2,y:17.5,a:0}});
-  const fl=signWall('FRONTIERLAND','#6b4a2c','#f2e2a0',2.0,'next build');WALLS[fl].use={label:'Look toward Frontierland',fn:()=>say('Frontierland: the Mark Twain, Rivers of America, Tom Sawyer Island and the Golden Horseshoe lie beyond the stockade. Not part of this build yet.',6500)};
-  rect(m,2,5,5,7,0);frect(m,2,5,5,7,'dirt');rect(m,2,4,5,4,W.stockade);rect(m,2,8,5,8,W.stockade);rect(m,1,5,1,7,fl);
-  rect(m,2,10,5,12,0);frect(m,2,10,5,12,'dirt');rect(m,2,9,5,9,W.thatch);rect(m,2,13,5,13,W.thatch);
-  put(m,6,10,0);put(m,6,11,0);put(m,6,12,0);put(m,6,5,0);put(m,6,6,0);put(m,6,7,0);
-  m.tri.push({x0:0,y0:9.5,x1:2.6,y1:12.5,go:{map:'adv',x:57.5,y:11.5,a:Math.PI}});
+  // (Central Plaza, moat and castle approach are built after the Main Street / Town Square rows are shifted south: see buildHubCastle)
   // ---------- Main Street ----------
-  rect(m,15,18,24,44,0);rect(m,16,18,23,44,0);
-  frect(m,16,18,17,44,'sidewalk');frect(m,22,18,23,44,'sidewalk');frect(m,18,18,21,44,'road');frect(m,19,18,19,58,'rail');
-  rect(m,15,18,15,44,W.brick);rect(m,24,18,24,44,W.brick);
+  rect(m,16,18,23,44,0);
+  frect(m,17,18,18,44,'sidewalk');frect(m,21,18,22,44,'sidewalk');frect(m,19,18,20,44,'road');frect(m,19,18,19,44,'rail');
+  rect(m,16,18,16,44,W.brick);rect(m,23,18,23,44,W.brick);
   // Center Street crossing
-  rect(m,8,31,14,32,0);rect(m,25,31,31,32,0);frect(m,8,31,14,32,'road');frect(m,25,31,31,32,'road');
-  rect(m,7,31,7,32,W.hedge);rect(m,32,31,32,32,W.hedge);rect(m,8,30,14,30,W.brick);rect(m,8,33,14,33,W.brick);rect(m,25,30,31,30,W.brick);rect(m,25,33,31,33,W.brick);
+  rect(m,8,31,15,32,0);rect(m,24,31,31,32,0);frect(m,8,31,15,32,'road');frect(m,24,31,31,32,'road');
+  rect(m,7,31,7,32,W.hedge);rect(m,32,31,32,32,W.hedge);rect(m,8,30,15,30,W.brick);rect(m,8,33,15,33,W.brick);rect(m,24,30,31,30,W.brick);rect(m,24,33,31,33,W.brick);
   facade(m,'N',30,9,shopWalls('flower','flower'));facade(m,'S',33,9,shopWalls('booksc','bookcandle'));
   // west (viewer faces W; a = min y)
-  facade(m,'W',15,41,shopWalls('carn','carnation'));
-  facade(m,'W',15,37,shopWalls('candy','candy'));
-  facade(m,'W',15,33,shopWalls('cinema','cinema'));
-  facade(m,'W',15,27,shopWalls('emp3','emporium'));
-  facade(m,'W',15,23,decorWalls('emp2'));
-  facade(m,'W',15,19,shopWalls('emp1','emporium'));
+  facade(m,'W',16,41,shopWalls('carn','carnation'));
+  facade(m,'W',16,37,shopWalls('candy','candy'));
+  facade(m,'W',16,33,shopWalls('cinema','cinema'));
+  facade(m,'W',16,27,shopWalls('emp3','emporium'));
+  facade(m,'W',16,23,decorWalls('emp2'));
+  facade(m,'W',16,19,shopWalls('emp1','emporium'));
   // east (viewer faces E)
-  facade(m,'E',24,41,shopWalls('kodak','kodak'));
-  facade(m,'E',24,37,decorWalls('market'));
-  facade(m,'E',24,33,shopWalls('wurl','wurlitzer'));
-  facade(m,'E',24,27,decorWalls('arcade'));
-  facade(m,'E',24,23,decorWalls('jewel'));
-  facade(m,'E',24,19,shopWalls('coke','coke'));
+  facade(m,'E',23,41,shopWalls('kodak','kodak'));
+  facade(m,'E',23,37,decorWalls('market'));
+  facade(m,'E',23,33,shopWalls('wurl','wurlitzer'));
+  facade(m,'E',23,27,decorWalls('arcade'));
+  facade(m,'E',23,23,decorWalls('jewel'));
+  facade(m,'E',23,19,shopWalls('coke','coke'));
   // ---------- Town Square ----------
-  rect(m,9,45,30,58,0);frect(m,9,45,30,58,'square');frect(m,16,45,23,45,'sidewalk');frect(m,19,45,19,46,'rail');paintTsLoop(m);
+  rect(m,9,45,30,58,0);frect(m,9,45,30,58,'square');frect(m,16,45,23,45,'sidewalk');frect(m,19,45,19,46,'rail');
   rect(m,9,45,15,45,W.brick);rect(m,24,45,30,45,W.brick);
   rect(m,8,46,8,58,W.brick);rect(m,31,46,31,58,W.brick);rect(m,9,59,30,59,W.brick);
   facade(m,'W',8,46,shopWalls('fire','fire'));
@@ -799,29 +778,96 @@ function buildPark(){
   // the two railroad-station tunnels under the berm (exit the park: Esplanade and parking lot lie beyond)
   for(const tx of [15,23]){rect(m,tx,59,tx+1,62,0);frect(m,tx,59,tx+1,62,'station');m.tri.push({x0:tx-.1,y0:62.3,x1:tx+2.1,y1:63.9,go:{map:'gate',x:tx+1,y:3.6,a:Math.PI/2}});}
   // ---------- furniture & sprites ----------
-  for(let y=20;y<=43;y+=6){addSprite(m,'lamp',17.7,y+.5);addSprite(m,'lamp',22.3,y+.5);}
-  addSprite(m,'lamp',17.7,19.5);addSprite(m,'lamp',22.3,19.5);
-  [[16.7,40.4],[23.3,38.4],[16.7,30.2],[23.3,29.4],[16.7,22.4]].forEach(p=>addSprite(m,'bench',p[0],p[1]).bench=true);
-  [[17.4,35.5],[22.6,41.5],[17.4,25.5],[22.6,21.5]].forEach(p=>addSprite(m,'bin',p[0],p[1]));
+  for(let y=20;y<=43;y+=6){addSprite(m,'lamp',18.5,y+.5);addSprite(m,'lamp',21.5,y+.5);}
+  addSprite(m,'lamp',18.5,19.5);addSprite(m,'lamp',21.5,19.5);
+  [[17.7,40.4],[22.3,38.4],[17.7,30.2],[22.3,29.4],[17.7,22.4]].forEach(p=>addSprite(m,'bench',p[0],p[1]).bench=true);
+  [[18.2,35.5],[21.8,41.5],[18.2,25.5],[21.8,21.5]].forEach(p=>addSprite(m,'bin',p[0],p[1]));
   const fp=addSprite(m,'flagpole',20,52);fp.isFlag=1;addSprite(m,'cannon',15,51).cannon=1;addSprite(m,'cannon',25,51).cannon=1;
   [[12,50],[28,50],[12,56],[28,56],[14,47],[26,47]].forEach(p=>addSprite(m,'lamp',p[0],p[1]));
   [[11,54.4],[29,52.4],[11,49],[29,57]].forEach(p=>addSprite(m,'bench',p[0],p[1]).bench=true);
   [[18,49],[22,49],[18,55],[22,55],[16,53],[24,53]].forEach(p=>addSprite(m,'flowerbed',p[0],p[1],{noblock:true}));
   [[10.2,46.8],[29.8,46.8]].forEach(p=>addSprite(m,'tree',p[0],p[1]));
-  for(const p of [[8,6],[12,6],[28,6],[32,6]])addSprite(m,'tree',p[0],p[1]);
-  [[9,14],[31,14],[9,8],[31,10]].forEach(p=>addSprite(m,'lamp',p[0]+.5,p[1]));
-  for(let i=0;i<8;i++){const a=i/8*6.283;const ly=10.5+Math.sin(a)*4.6;if(ly<8.3)continue;addSprite(m,'lamp',20+Math.cos(a)*5.2,ly,{noblock:false});}
-  [[19.5,10.5],[20.5,11.2]].forEach(p=>addSprite(m,'flowerbed',p[0],p[1],{noblock:true}));
-  addSprite(m,'bush',15.4,7.8,{noblock:true});addSprite(m,'bush',24.6,7.8,{noblock:true});
-  [[12,15],[28,15],[10,10],[30,10]].forEach(p=>addSprite(m,'bench',p[0],p[1]).bench=true);
-  const pop=addSprite(m,'popcorn',23.2,15.2);pop.stand='popcorn';
   const pop2=addSprite(m,'popcorn',17.0,44.2);pop2.stand='popcorn';
+  // Bekins delivery van sits parked in Town Square (not a ride)
+  addSprite(m,'bekins',17.9,45.5,{noblock:true}).heading=Math.PI/2;
+  // crowds
+  spawnCrowd(m,16,10,47,29,57);spawnCrowd(m,20,17.3,19,22.7,44);spawnCrowd(m,4,9,31,14,32);
+  const cm=SPR.castmember;
+  for(const p of [[17.6,44.5],[22.4,43.4]]){const s=addSprite(m,{frames:cm.frames,sw:cm.sw,sh:cm.sh,r:0},p[0],p[1],{noblock:true});s.npc={a:Math.random()*6,sp:.25,t:2,box:[p[0]-1.5,p[1]-1.5,p[0]+1.5,p[1]+1.5],fr:0};m.npcs.push(s);}
+  m.labels=[[20,53,'Town Square'],[20,38,'MAIN STREET'],[20,58.5,'Railroad Station / Entrance']];
+  m.uses.push({x:22.2,y:24.5,r:2.6,arc:2,label:'Look in the Upjohn Pharmacy window',fn:()=>{const S=G.S;let t="The front of Upjohn Pharmacy is an old-time apothecary: jars, show globes, scales, antique microscopes and a jar of live leeches. Nothing is sold; guests get free postcards and a sample of Unicap vitamins.";if(!S.upjohnCard&&S.inv.length<6){S.upjohnCard=1;addToPack({k:'postcard',type:'souvenir',desc:'a free Upjohn Pharmacy postcard',fun:2});t+=' You take a free postcard.';updateHUD();SND.pickup();}say(t,7500);}});
+  m.uses.push({x:14,y:50.6,r:2.6,arc:2,label:'Look at the gas lamp',fn:()=>say('The Main Street gas lamps came from St. Louis, shipped west and set along the street.',5200)});
+  m.uses.push({x:10.5,y:47.5,r:3,arc:2,label:'Listen for the Firehouse Five Plus Two',fn:()=>{say('Dixieland jazz in the Firehouse Five Plus Two style: the band of Disney animators played at Disneyland with Walt\'s blessing and made a 1962 LP called At Disneyland. (Whether they play here today is not documented.)',5500);}});
+  m.uses.push({x:12.5,y:47.5,r:2.6,arc:2,label:'Listen for the Dapper Dans',fn:()=>say('The Dapper Dans, a barbershop quartet in striped jackets and straw boaters, have sung on Main Street since 1959.',5500)});
+  m.spawn={x:20.5,y:58.1,a:-Math.PI/2};
+  shiftSouth(m,18,PARK_DY);buildHubCastle(m);buildParkVehicles(m);paintTsLoop(m);
+  m.tick=flagTick;
+  return m;
+}
+
+// insert dy rows at `from`: everything at or below that row (grid, floors, sprites, blockers, triggers, uses, labels, shop exits) moves south
+function shiftSouth(m,from,dy){
+  const w=m.w,h1=m.h+dy,g=new Uint16Array(w*h1),f=new Uint8Array(w*h1);
+  for(let y=0;y<h1;y++)for(let x=0;x<w;x++){const i=y*w+x;
+    if(y<from){g[i]=m.grid[i];f[i]=m.floor[i];}else if(y<from+dy){g[i]=W.berm;f[i]=FLOOR.grass;}else{g[i]=m.grid[i-dy*w];f[i]=m.floor[i-dy*w];}}
+  m.grid=g;m.floor=f;m.h=h1;
+  for(const s of m.sprites){if(s.y>=from){s.y+=dy;if(s.npc&&s.npc.box){s.npc.box[1]+=dy;s.npc.box[3]+=dy;}}}
+  for(const b of m.blockers)if(b.y>=from)b.y+=dy;
+  for(const t of m.tri)if(t.y0>=from){t.y0+=dy;t.y1+=dy;}
+  for(const u of m.uses)if(u.y>=from)u.y+=dy;
+  for(const l of m.labels)if(l[1]>=from)l[1]+=dy;
+  if(m.spawn&&m.spawn.y>=from)m.spawn.y+=dy;
+  for(const k in SHOPLOC){const q=SHOPLOC[k];if(q.map==='park'&&q.y>=from)q.y+=dy;}
+}
+// Central Plaza, moat and the castle approach, laid out from the park scan: castle gate -> moat (9 cells) -> forecourt (4) -> hub (26 across, centre 26 cells from the gate)
+function buildHubCastle(m){
+  const w=m.w,CX=20,CY=30,R=13,top=18+PARK_DY;
+  for(let y=0;y<top;y++)for(let x=0;x<w;x++){m.grid[y*w+x]=W.berm;m.floor[y*w+x]=FLOOR.grass;}
+  rect(m,0,0,39,3,0);
+  // moat and bridge
+  rect(m,12,4,27,12,W.inv);frect(m,12,4,27,12,'water');rect(m,19,4,20,12,0);frect(m,19,4,20,12,'plaza');rect(m,19,3,20,3,0);frect(m,19,3,20,3,'plaza');
+  m.tri.push({x0:19.05,y0:2.7,x1:20.95,y1:3.7,go:{map:'fant',x:20,y:23.4,a:-Math.PI/2}});
+  rect(m,12,3,18,3,W.inv);rect(m,21,3,27,3,W.inv);
+  // forecourt
+  rect(m,12,13,27,16,0);frect(m,12,13,27,16,'plaza');rect(m,12,13,16,13,W.planter);rect(m,23,13,27,13,W.planter);frect(m,13,14,16,14,'grass');frect(m,23,14,26,14,'grass');
+  // hub: a disc of plaza with a hedge boundary
+  for(let y=top-26;y<top;y++)for(let x=4;x<=36;x++){const d=Math.hypot(x+.5-CX,y+.5-CY),i=y*w+x;
+    if(d<=R){m.grid[i]=0;m.floor[i]=FLOOR.plaza;}else if(d<=R+1.4){m.grid[i]=W.tallhedge;}}
+  // central planter (contents of the 1967 planter unverified: plain flower bed, no Partners statue - that arrived in 1993)
+  for(let y=top-26;y<top;y++)for(let x=4;x<=36;x++){const d=Math.hypot(x+.5-CX,y+.5-CY),i=y*w+x;
+    if(d<=6.7){m.floor[i]=FLOOR.flowers;m.grid[i]=d>5.3?W.planter:0;}}
+  // Main Street mouth flares into the hub
+  rect(m,14,top-3,25,top-1,0);frect(m,14,top-3,25,top-1,'plaza');
+  // Plaza Inn (east side of the plaza, facing west) - exterior only in this build
+  rect(m,31,22,32,25,0);frect(m,31,22,32,25,'plaza');facade(m,'E',33,22,decorWalls('plazainn'));
+  // Tomorrowland gate (east), Frontierland gate (north-west) and Adventureland bridge (west)
+  rect(m,32,28,38,31,0);frect(m,32,28,38,31,'plaza');rect(m,34,27,38,27,W.tallhedge);rect(m,34,32,38,32,W.tallhedge);
+  const tmlSign=signWall('TOMORROWLAND','#dfe6ee','#2d4f94',2.0,'Now open: New Tomorrowland');put(m,35,27,tmlSign);put(m,35,32,tmlSign);
+  m.tri.push({x0:38.3,y0:28,x1:39.9,y1:32,go:{map:'tml',x:3.2,y:17.5,a:0}});
+  const fl=signWall('FRONTIERLAND','#6b4a2c','#f2e2a0',2.0,'next build');WALLS[fl].use={label:'Look toward Frontierland',fn:()=>say('Frontierland: the Mark Twain, Rivers of America, Tom Sawyer Island and the Golden Horseshoe lie beyond the stockade. Not part of this build yet.',6500)};
+  rect(m,2,19,11,22,0);frect(m,2,19,5,22,'dirt');frect(m,6,19,11,22,'plaza');rect(m,2,18,11,18,W.stockade);rect(m,2,23,11,23,W.stockade);rect(m,1,19,1,22,fl);
+  rect(m,2,28,7,31,0);frect(m,2,28,5,31,'dirt');frect(m,6,28,7,31,'plaza');rect(m,2,27,5,27,W.thatch);rect(m,2,32,5,32,W.thatch);
+  m.tri.push({x0:0,y0:28,x1:2.6,y1:32,go:{map:'adv',x:57.5,y:11.5,a:Math.PI}});
+  // furniture
+  [[10.5,14.5],[29.5,14.5],[8.5,19.5],[31.5,19.5]].forEach(p=>addSprite(m,'tree',p[0],p[1]));
+  [[12.5,15.5],[27.5,15.5]].forEach(p=>addSprite(m,'lamp',p[0],p[1]));
+  for(let k=0;k<12;k++){if([0,3,6,9].includes(k))continue;const a=k*Math.PI/6;addSprite(m,'lamp',CX+Math.cos(a)*11.8,CY+Math.sin(a)*11.8);}
+  for(let k=0;k<8;k++){const a=(k*45+22.5)*Math.PI/180;addSprite(m,'bench',CX+Math.cos(a)*9.4,CY+Math.sin(a)*9.4).bench=true;}
+  [[20,30],[17.4,27.6],[22.6,27.6],[17.4,32.4],[22.6,32.4]].forEach(p=>addSprite(m,'flowerbed',p[0],p[1],{noblock:true}));
+  addSprite(m,'bush',15.4,14.7,{noblock:true});addSprite(m,'bush',24.6,14.7,{noblock:true});
+  const pop=addSprite(m,'popcorn',26.4,23.6);pop.stand='popcorn';
   // backdrop: castle, Matterhorn, Tomorrowland spire, far trees
   addSprite(m,'castle',20,1.4,{noblock:true,bright:1});
-  addSprite(m,'matterhorn',49,-22,{noblock:true});addSprite(m,'rocketjets',56,8,{noblock:true});
+  addSprite(m,'matterhorn',49,-22,{noblock:true});addSprite(m,'rocketjets',56,24,{noblock:true});
   for(let i=0;i<14;i++)addSprite(m,'trees_far',-14+i*7,-10,{noblock:true});
-  for(let i=0;i<8;i++){addSprite(m,'trees_far',-14,6+i*9,{noblock:true});addSprite(m,'trees_far',58,6+i*9,{noblock:true});}
-  for(let i=0;i<10;i++)addSprite(m,'trees_far',-4+i*6,72,{noblock:true});
+  for(let i=0;i<11;i++){addSprite(m,'trees_far',-14,6+i*9,{noblock:true});addSprite(m,'trees_far',58,6+i*9,{noblock:true});}
+  for(let i=0;i<10;i++)addSprite(m,'trees_far',-4+i*6,m.h+8,{noblock:true});
+  spawnCrowd(m,16,9,19,31,41);spawnCrowd(m,6,13,13.5,27,16);
+  const cm=SPR.castmember;{const s=addSprite(m,{frames:cm.frames,sw:cm.sw,sh:cm.sh,r:0},21,35,{noblock:true});s.npc={a:Math.random()*6,sp:.25,t:2,box:[19.5,33.5,22.5,36.5],fr:0};m.npcs.push(s);}
+  m.labels.push([20,36.5,'Central Plaza'],[20,2.5,'Sleeping Beauty Castle'],[3,30,'Adventureland'],[3,20.5,'Frontierland'],[36,29.5,'Tomorrowland']);
+  m.uses.push({x:20,y:6.5,r:3.2,arc:1.2,label:'Look at Sleeping Beauty Castle',fn:()=>say('Sleeping Beauty Castle: only 77 feet tall, built in forced perspective so details shrink toward the top. Walt chose blue roofs to blend with the sky, and a Disney family coat of arms with three lions has hung over the archway since 1965. Fantasyland lies through the gate; it is not part of this build yet.',8000)});
+}
+function buildParkVehicles(m){
   // Main Street vehicles: all run one continuous loop (north in the east lane, back south in the west lane) and
   // stop at a Town Square berth and a Central Plaza berth. Each vehicle has its own berth and its own pole sign.
   const mkv=(def,label,i,short,col)=>{const v=addSprite(m,def,21.4,50,{noblock:true});v.car={i,s:0,dock:0,wait:0,rest:0,spd:VLOOP.spd,x:21,y:50,state:'run'};v.label=label;v.heading=-Math.PI/2;m.blockers.push({x:21,y:50,r:.5,s:v});v.vname=short;return v;};
@@ -833,37 +879,22 @@ function buildPark(){
   m.vehicles.forEach((v,i)=>{v.car.s=(i*VLOOP.L/4+VLOOP.L-20)%VLOOP.L;v.car.berths=[VLOOP.tsS(i),VLOOP.cpS(i)];{const c=v.car,L=VLOOP.L,d0=((c.berths[0]-c.s)%L+L)%L,d1=((c.berths[1]-c.s)%L+L)%L;c.next=d0<=d1?0:1;}});
   // pole signs at the curb: Town Square (east curb, northbound lane) and Central Plaza (west curb, southbound lane)
   m.vstops=[];
-  m.vehicles.forEach((v,i)=>{for(const k of [0,1]){const y=k?VLOOP.cpY(i):VLOOP.tsY(i),x=k?17.55:22.45;
+  m.vehicles.forEach((v,i)=>{for(const k of [0,1]){const y=k?VLOOP.cpY(i):VLOOP.tsY(i),x=k?18.55:21.45;
     const sg=addSprite(m,'vstop'+i,x,y,{noblock:true});sg.vstop={v,k};sg.label=(k?'Central Plaza':'Town Square')+' stop - '+v.label;
     sg.useFn=()=>boardAtStop(v,k);m.vstops.push(sg);}});
-  // Bekins delivery van sits parked in Town Square (not a ride)
-  addSprite(m,'bekins',17.9,45.5,{noblock:true}).heading=Math.PI/2;
-  // crowds
-  spawnCrowd(m,16,10,47,29,57);spawnCrowd(m,26,16.5,19,23.5,44);spawnCrowd(m,16,7,5,32,16);spawnCrowd(m,4,9,31,14,32);
-  const cm=SPR.castmember;
-  for(const p of [[16.6,44.5],[23.4,43.4],[21,16]]){const s=addSprite(m,{frames:cm.frames,sw:cm.sw,sh:cm.sh,r:0},p[0],p[1],{noblock:true});s.npc={a:Math.random()*6,sp:.25,t:2,box:[p[0]-1.5,p[1]-1.5,p[0]+1.5,p[1]+1.5],fr:0};m.npcs.push(s);}
-  m.labels=[[20,53,'Town Square'],[20,38,'MAIN STREET'],[20,14.5,'Central Plaza'],[20,2.5,'Sleeping Beauty Castle'],[3,11.8,'Adventureland'],[3,6,'Frontierland'],[36,11.5,'Tomorrowland'],[20,58.5,'Railroad Station / Entrance']];
-  m.uses.push({x:22.2,y:24.5,r:2.6,arc:2,label:'Look in the Upjohn Pharmacy window',fn:()=>{const S=G.S;let t="The front of Upjohn Pharmacy is an old-time apothecary: jars, show globes, scales, antique microscopes and a jar of live leeches. Nothing is sold; guests get free postcards and a sample of Unicap vitamins.";if(!S.upjohnCard&&S.inv.length<6){S.upjohnCard=1;addToPack({k:'postcard',type:'souvenir',desc:'a free Upjohn Pharmacy postcard',fun:2});t+=' You take a free postcard.';updateHUD();SND.pickup();}say(t,7500);}});
-  m.uses.push({x:14,y:50.6,r:2.6,arc:2,label:'Look at the gas lamp',fn:()=>say('The Main Street gas lamps came from St. Louis, shipped west and set along the street.',5200)});
-  m.uses.push({x:10.5,y:47.5,r:3,arc:2,label:'Listen for the Firehouse Five Plus Two',fn:()=>{say('Dixieland jazz in the Firehouse Five Plus Two style: the band of Disney animators played at Disneyland with Walt\'s blessing and made a 1962 LP called At Disneyland. (Whether they play here today is not documented.)',5500);}});
-  m.uses.push({x:12.5,y:47.5,r:2.6,arc:2,label:'Listen for the Dapper Dans',fn:()=>say('The Dapper Dans, a barbershop quartet in striped jackets and straw boaters, have sung on Main Street since 1959.',5500)});
-  m.uses.push({x:20,y:4.6,r:3.2,arc:1.2,label:'Look at Sleeping Beauty Castle',fn:()=>say('Sleeping Beauty Castle: only 77 feet tall, built in forced perspective so details shrink toward the top. Walt chose blue roofs to blend with the sky, and a Disney family coat of arms with three lions has hung over the archway since 1965. Fantasyland lies through the gate; it is not part of this build yet.',8000)});
-  m.tick=flagTick;
-  m.spawn={x:20.5,y:58.1,a:-Math.PI/2};
-  return m;
 }
 /* ---- Main Street vehicle loop ---- */
 const VLOOP=(()=>{
   // Measured from the park scan: the two Main Street lanes flare into a teardrop loop around the Town Square island.
-  const X1=21.4,X2=18.6,YT=46.8,Y1=21.5,A=YT-Y1,B=X1-X2;
-  const cp=[[18.6,45.2],[18.6,YT],[17.1,48.4],[14.9,50.6],[13.9,53.2],[14.8,55.5],[17.2,56.9],[20,57.3],[22.8,56.9],[25.2,55.5],[26.1,53.2],[25.1,50.6],[22.9,48.4],[21.4,YT],[21.4,45.2]];
+  const OY=PARK_DY,X1=20.55,X2=19.45,YT=46.8+OY,Y1=21.5+OY,A=YT-Y1,B=X1-X2;
+  const cp=[[X2,45.2+OY],[X2,YT],[17.1,48.4],[14.9,50.6],[13.9,53.2],[14.8,55.5],[17.2,56.9],[20,57.3],[22.8,56.9],[25.2,55.5],[26.1,53.2],[25.1,50.6],[22.9,48.4],[X1,YT],[X1,45.2+OY]].map((q,i,a)=>i===0||i===1||i>=a.length-2?q:[q[0],q[1]+OY]);
   const bulb=[];for(let i=1;i<cp.length-2;i++){const p0=cp[i-1],p1=cp[i],p2=cp[i+1],p3=cp[i+2];
     for(let k=0;k<16;k++){const t=k/16,t2=t*t,t3=t2*t;bulb.push([0,1].map(a=>.5*((2*p1[a])+(-p0[a]+p2[a])*t+(2*p0[a]-5*p1[a]+4*p2[a]-p3[a])*t2+(-p0[a]+3*p1[a]-3*p2[a]+p3[a])*t3)));}}
   bulb.push([X1,YT]);
   const cum=[0];for(let i=1;i<bulb.length;i++)cum.push(cum[i-1]+Math.hypot(bulb[i][0]-bulb[i-1][0],bulb[i][1]-bulb[i-1][1]));
   const Lb=cum[cum.length-1],L=2*A+B+Lb;
   return {X1,X2,YT,Y1,A,B,L,Lb,bulb,spd:1.15,dwell:20,gap:3.4,
-    tsY:i=>YT-.6-3.5*i,cpY:i=>23+3.5*i,tsS:i=>.6+3.5*i,cpS:i=>A+B+((23+3.5*i)-Y1),
+    tsY:i=>YT-.6-3.5*i,cpY:i=>23+OY+3.5*i,tsS:i=>.6+3.5*i,cpS:i=>A+B+((23+OY+3.5*i)-Y1),
     at(s){s=((s%L)+L)%L;if(s<A)return{x:X1,y:YT-s,h:-Math.PI/2};s-=A;if(s<B)return{x:X1-s,y:Y1,h:Math.PI};s-=B;if(s<A)return{x:X2,y:Y1+s,h:Math.PI/2};s-=A;
       let j=1;while(j<cum.length-1&&cum[j]<s)j++;const a=bulb[j-1],b=bulb[j],d=cum[j]-cum[j-1]||1,t=Math.max(0,Math.min(1,(s-cum[j-1])/d));return{x:a[0]+(b[0]-a[0])*t,y:a[1]+(b[1]-a[1])*t,h:Math.atan2(b[1]-a[1],b[0]-a[0])};}};})();
 function boardAtStop(v,k){const c=v.car;
@@ -871,8 +902,8 @@ function boardAtStop(v,k){const c=v.car;
   const L=VLOOP.L,tgt=c.berths[k],d=((tgt-c.s)%L+L)%L,eta=Math.round(d/c.spd+(c.dock>0?0:0));
   say('The '+v.label+' is not here right now. It should arrive in about '+Math.max(5,Math.round(eta/5)*5)+' seconds.',3500);}
 // pave the vehicle teardrop: every cell whose centre is within ~1.3 cells of the lane path becomes road
-function paintTsLoop(m){const V=VLOOP,pts=[];for(let y=45;y<=V.YT;y+=.25){pts.push([V.X2,y],[V.X1,y]);}V.bulb.forEach(q=>pts.push(q));
-  for(let y=45;y<=58;y++)for(let x=12;x<=28;x++){let ok=false;for(const q of pts){if(Math.hypot(x+.5-q[0],y+.5-q[1])<=1.15){ok=true;break;}}if(ok&&!m.grid[y*m.w+x])m.floor[y*m.w+x]=FLOOR.road;}}
+function paintTsLoop(m){const V=VLOOP,pts=[];for(let y=45+PARK_DY;y<=V.YT;y+=.25){pts.push([V.X2,y],[V.X1,y]);}V.bulb.forEach(q=>pts.push(q));
+  for(let y=45+PARK_DY;y<=58+PARK_DY;y++)for(let x=12;x<=28;x++){let ok=false;for(const q of pts){if(Math.hypot(x+.5-q[0],y+.5-q[1])<=1.15){ok=true;break;}}if(ok&&!m.grid[y*m.w+x])m.floor[y*m.w+x]=FLOOR.road;}}
 function updateStreetcar(m,dt){const V=VLOOP,list=m.vehicles||[];
   for(const v of list){const c=v.car;
     if(c.dock>0){c.dock-=dt;if(c.dock<=0){c.dock=0;c.rest=3.2;}}
@@ -927,7 +958,7 @@ function buildAdv(){
   rect(m,0,0,61,27,W.jungle);m.floor.fill(FLOOR.grass);
   rect(m,8,10,60,13,0);frect(m,31,10,60,13,'dirt');frect(m,8,10,30,13,'cobble');
   rect(m,61,10,61,13,signWall('ADVENTURELAND','#8a7a3c','#f6e8a0',1.9,'next: the rest of the land'));
-  m.tri.push({x0:59.4,y0:9.5,x1:61,y1:13.5,go:{map:'park',x:4.2,y:11.5,a:0}});
+  m.tri.push({x0:59.4,y0:9.5,x1:61,y1:13.5,go:{map:'park',x:4.2,y:30,a:0}});
   // north frontages (viewer faces N, tile0 = west)
   const tk=(name,door,disp)=>({name,style:'tiki',door,display:disp||'none'});
   facade(m,'N',9,52,makeShopWalls(tk('ADVENTURELAND BAZAAR',1),{shop:'bazaar',label:'Enter the Adventureland Bazaar'}));
@@ -1125,7 +1156,7 @@ function buildGate(){
   const st=makeShopWalls(Object.assign({},SPEC.station,{door:null}),null);
   for(let i=0;i<6;i++)facade(m,'N',4,6+i*4,st);
   for(const tx of [15,23]){rect(m,tx,1,tx+1,4,0);frect(m,tx,1,tx+1,4,'station');
-    m.tri.push({x0:tx-.1,y0:.6,x1:tx+2.1,y1:2.0,need:'admitted',go:{map:'park',x:tx+1,y:61.5,a:-Math.PI/2}});}
+    m.tri.push({x0:tx-.1,y0:.6,x1:tx+2.1,y1:2.0,need:'admitted',go:{map:'park',x:tx+1,y:61.5+PARK_DY,a:-Math.PI/2}});}
   // tunnel posters (1967 attractions)
   const post=(t,bg,fg,sub)=>signWall(t,bg,fg,1.6,sub);
   put(m,14,2,post('PIRATES OF THE CARIBBEAN','#3a2a1c','#f2d870','NOW OPEN - E coupon'));put(m,14,3,post("IT'S A SMALL WORLD",'#2d6cb0','#fff3b8','Bank of America'));
@@ -1313,7 +1344,7 @@ function buildTml(){
   rect(m,2,3,49,31,0);frect(m,2,3,49,31,'tmlfloor');
   for(let x=2;x<=49;x++){put(m,x,2,tw);put(m,x,32,tw);}for(let y=2;y<=32;y++){put(m,1,y,tw);put(m,50,y,tw);}
   // ---- layout follows the Summer 1967 Disneyland guide map (north up, entrance plaza west, hub in the middle) ----
-  rect(m,1,21,2,23,0);frect(m,1,21,2,23,'plaza'); m.tri.push({x0:.2,y0:20.8,x1:1.9,y1:24,go:{map:'park',x:36.5,y:11,a:Math.PI}});
+  rect(m,1,21,2,23,0);frect(m,1,21,2,23,'plaza'); m.tri.push({x0:.2,y0:20.8,x1:1.9,y1:24,go:{map:'park',x:36.5,y:30,a:Math.PI}});
   frect(m,2,19,8,26,'plaza');frect(m,9,21,26,23,'plaza');frect(m,26,17,34,24,'plaza');
   const att=(dir,fixed,a,spec,key,label)=>{facade(m,dir,fixed,a,makeShopWalls(SPEC[spec],{fn:showFn(key),label:label||('Enter '+SPEC[spec].name)}));};
   const dec=(dir,fixed,a,spec)=>facade(m,dir,fixed,a,decorWalls(spec));
@@ -2798,7 +2829,7 @@ function ragBar(){const c=ac();if(!c)return;const beat=60/108,sx=beat/4,ch=RAG.c
 function ragTick(dt){ // keep the scheduler ahead of the clock only while something is audible
   const c=ac();if(!c||!AUD.on||!G.started)return;
   let src=null;const m=G.map;
-  if(m&&m.key==='park')src=[24,21.5,17];else if(m&&m.key==='coke')src=[1.9,m.h-3.2,9];else if(m&&m.key==='wurlitzer')src=[1.9,m.h-3.2,9];
+  if(m&&m.key==='park')src=[22.5,21.5+PARK_DY,17];else if(m&&m.key==='coke')src=[1.9,m.h-3.2,9];else if(m&&m.key==='wurlitzer')src=[1.9,m.h-3.2,9];
   let s=src?spat(src[0],src[1],src[2]):null;
   if(s&&G.mode==='panel')s=null;
   if(AUD.ragForce)s={vol:.6,pan:0};
@@ -3135,8 +3166,8 @@ function mapSpotFor(m,p){
   if(!m)return null;const k=m.key;
   if(k==='gate')return {x:450,y:614};
   if(k==='park'){
-    if(p.y>=18){const t=(Math.min(p.y,57)-18)/39;return {x:450+(p.x-20)*6,y:400+t*150};}
-    return {x:450+(p.x-20)*11,y:330+(p.y/18)*70};
+    if(p.y>=18+PARK_DY){const t=(Math.min(p.y,57+PARK_DY)-18-PARK_DY)/39;return {x:450+(p.x-20)*6,y:400+t*150};}
+    return {x:450+(p.x-20)*11,y:330+(p.y/(18+PARK_DY))*70};
   }
   if(k==='adv')return {x:Math.max(90,Math.min(380,380-(p.x-1)*3.4)),y:340+Math.min(1,p.y/24)*120};
   if(k==='tml')return {x:520+(p.x-2)/47*300,y:230+(p.y-3)/29*230};
@@ -4166,7 +4197,7 @@ function r3Scene(m){
   for(const [k,b] of curbs){const ms=new T.Mesh(bgeo(b),lam({color:0xc8c0ae}));ms.receiveShadow=true;ms.castShadow=true;sc.add(ms);}
   // ground beyond the map edge
   {const g=new T.PlaneGeometry(1200,1200);g.rotateX(-Math.PI/2);const t=r3T(FLOORS[m.outFloor||0],true).clone();t.needsUpdate=true;t.repeat.set(1200,1200);t.wrapS=t.wrapT=T.RepeatWrapping;
-   const ms=new T.Mesh(g,lam({map:t}));ms.position.set(m.w/2,-.02,m.h/2);ms.receiveShadow=true;sc.add(ms);}
+   const ms=new T.Mesh(g,lam({map:t}));ms.position.set(m.w/2,-.16,m.h/2);ms.receiveShadow=true;sc.add(ms);}
   // ceiling for indoor maps
   if(!m.sky){const g=new T.PlaneGeometry(m.w,m.h);g.rotateX(Math.PI/2);const mt=(m.ceil>=0)?lam({map:(()=>{const t=r3T(FLOORS[m.ceil],true).clone();t.needsUpdate=true;t.repeat.set(m.w,m.h);t.wrapS=t.wrapT=T.RepeatWrapping;return t;})()}):new T.MeshBasicMaterial({color:new T.Color().setRGB(m.fogC[0]/255,m.fogC[1]/255,m.fogC[2]/255)});
     const ms=new T.Mesh(g,mt);ms.position.set(m.w/2,1.0,m.h/2);sc.add(ms);}
@@ -4211,7 +4242,7 @@ function r3Static(m,S){
     [body,roof].forEach(im=>{im.instanceColor&&(im.instanceColor.needsUpdate=true);});}
   // Main Street Station pavilion (gabled centre with clock): gate side faces +Z (south), park side faces -Z (north)
   if(m.key==='gate')r3Pavilion(S,20,4,1);
-  if(m.key==='park')r3Pavilion(S,19.5,59,-1);
+  if(m.key==='park')r3Pavilion(S,19.5,59+PARK_DY,-1);
 }
 function r3Pavilion(S,cx,z0,dir){
   const T=THREE,g=new T.Group(),lam=(c,o)=>new T.MeshLambertMaterial(Object.assign({color:c},o||{}));
