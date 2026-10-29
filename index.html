@@ -4211,8 +4211,10 @@ function r3Scene(m){
     if(alongX){ms.position.set(d.x,0,d.y+.5);}else{ms.rotation.y=Math.PI/2;ms.position.set(d.x+.5,0,d.y);}
     d.mesh=ms;d.alongX=alongX;sc.add(ms);}
   r3Static(m,S);
-  if(S.booths){const cg=new T.ConeGeometry(.88,.42,4);cg.rotateY(Math.PI/4);const im=new T.InstancedMesh(cg,lam({color:0x2d6f5a}),S.booths.length);const mt=new T.Matrix4();S.booths.forEach((p,i)=>{mt.makeTranslation(p[0],p[1]+.21,p[2]);im.setMatrixAt(i,mt);});im.castShadow=true;sc.add(im);
-    const sg=new T.BoxGeometry(1.12,.07,1.12);const im2=new T.InstancedMesh(sg,lam({color:0xf1e8d0}),S.booths.length);S.booths.forEach((p,i)=>{mt.makeTranslation(p[0],p[1]+.02,p[2]);im2.setMatrixAt(i,mt);});im2.castShadow=true;sc.add(im2);}
+  if(S.booths){const mt=new T.Matrix4();const n=S.booths.length;
+    const rg=new T.BoxGeometry(1.16,.08,1.16);const im=new T.InstancedMesh(rg,lam({color:0xf6f1e2}),n);S.booths.forEach((p,i)=>{mt.makeTranslation(p[0],p[1]+.05,p[2]);im.setMatrixAt(i,mt);});im.castShadow=true;sc.add(im);
+    const cg2=new T.BoxGeometry(1.0,.1,1.0);const im3=new T.InstancedMesh(cg2,lam({color:0xe6dcc0}),n);S.booths.forEach((p,i)=>{mt.makeTranslation(p[0],p[1]+.12,p[2]);im3.setMatrixAt(i,mt);});im3.castShadow=true;sc.add(im3);
+    const dg=new T.CylinderGeometry(.17,.17,.03,16);dg.rotateX(Math.PI/2);const im4=new T.InstancedMesh(dg,lam({color:0xfbf7ea}),n);S.booths.forEach((p,i)=>{mt.makeTranslation(p[0],p[1]+.3,p[2]+.52);im4.setMatrixAt(i,mt);});sc.add(im4);}
   // lights
   S.hemi=new T.HemisphereLight(0xdfeeff,0x8a8a6a,1.0);sc.add(S.hemi);
   S.sun=new T.DirectionalLight(0xfff2d8,.9);S.sun.position.set(-30,50,-18);sc.add(S.sun);sc.add(S.sun.target);
@@ -4245,25 +4247,41 @@ function r3Static(m,S){
   if(m.key==='park')r3Pavilion(S,19.5,59+PARK_DY,-1);
 }
 function r3Pavilion(S,cx,z0,dir){
+  // Main Street Station, after 1960s photos: red brick, dark mansard roofs with dormers, a left pavilion, a centre block over the
+  // DISNEYLAND sign, and the clock tower with its tall spire at the EAST (+x) end; low hip-roofed arcade wings either side.
   const T=THREE,g=new T.Group(),lam=(c,o)=>new T.MeshLambertMaterial(Object.assign({color:c},o||{}));
-  const brick=lam(0x9a5a3a),trim=lam(0xf1e9d6),slate=lam(0x4f4a52,{side:T.DoubleSide});
-  const W=6,Hs=2.0,Hp=2.75,D=.9;
-  const body=new T.Mesh(new T.BoxGeometry(W,Hp-Hs,D),brick);body.position.set(0,(Hp+Hs)/2,0);g.add(body);
-  const cor=new T.Mesh(new T.BoxGeometry(W+.3,.12,D+.3),trim);cor.position.set(0,Hp+.06,0);g.add(cor);
-  // gable roof along x with triangular pediment front
-  const sh=new T.Shape();sh.moveTo(-W/2,0);sh.lineTo(W/2,0);sh.lineTo(0,1.15);sh.closePath();
-  const roofm=new T.Mesh(new T.ExtrudeGeometry(sh,{depth:D+.1,bevelEnabled:false}),slate);roofm.position.set(0,Hp+.12,-(D+.1)/2);g.add(roofm);
-  // clock + arched window on the front of the pediment
-  const fc=document.createElement('canvas');fc.width=256;fc.height=256;const x=fc.getContext('2d');x.fillStyle='#9a5a3a';x.fillRect(0,0,256,256);x.fillStyle='#f1e9d6';x.beginPath();x.arc(128,128,100,0,7);x.fill();x.fillStyle='#fffdf4';x.beginPath();x.arc(128,128,88,0,7);x.fill();x.strokeStyle='#2a2118';x.lineWidth=5;x.stroke();
-  x.lineWidth=3;for(let i=0;i<12;i++){const a=i*Math.PI/6;x.beginPath();x.moveTo(128+Math.sin(a)*74,128-Math.cos(a)*74);x.lineTo(128+Math.sin(a)*84,128-Math.cos(a)*84);x.stroke();}
-  x.lineWidth=7;x.beginPath();x.moveTo(128,128);x.lineTo(128,64);x.stroke();x.lineWidth=5;x.beginPath();x.moveTo(128,128);x.lineTo(168,142);x.stroke();
-  const ct=new T.CanvasTexture(fc);ct.encoding=T.sRGBEncoding;const clock=new T.Mesh(new T.PlaneGeometry(.8,.8),new T.MeshLambertMaterial({map:ct}));clock.position.set(0,Hp+.55,(D+.1)/2+.01);g.add(clock);
-  const clock2=clock.clone();clock2.rotation.y=Math.PI;clock2.position.z=-(D+.1)/2-.01;g.add(clock2);
-  // cupola + spire on the ridge
-  const cup=new T.Mesh(new T.BoxGeometry(.5,.45,.5),trim);cup.position.set(0,Hp+1.35,0);g.add(cup);
-  const cone=new T.Mesh(new T.ConeGeometry(.42,.8,8),slate);cone.position.set(0,Hp+2.0,0);g.add(cone);
-  const sp=new T.Mesh(new T.CylinderGeometry(.01,.02,.5,6),lam(0xd4b25a));sp.position.set(0,Hp+2.6,0);g.add(sp);
-  g.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});
+  const brick=lam(0x9a4a38),trim=lam(0xf1e9d6),slate=lam(0x2e282c,{side:T.DoubleSide}),glass=lam(0x2a3a4a),gold=lam(0xd4b25a);
+  const Hs=2.0,D=.9;
+  const add=(m)=>{m.castShadow=true;m.receiveShadow=false;g.add(m);return m;};
+  const bx=(w,h,d,mat,x,y,z)=>{const m=add(new T.Mesh(new T.BoxGeometry(w,h,d),mat));m.position.set(x,y,z);return m;};
+  // mansard block: brick band, cornice, steep slate slope (trapezoid prism along x), flat top
+  const mansard=(x0,x1,hb,hm)=>{const w=x1-x0,xc=(x0+x1)/2;
+    bx(w,hb,D,brick,xc,Hs+hb/2,0);bx(w+.1,.07,D+.16,trim,xc,Hs+hb+.03,0);
+    const sh=new T.Shape(),t=.2;sh.moveTo(-D/2-.04,0);sh.lineTo(D/2+.04,0);sh.lineTo(t,hm);sh.lineTo(-t,hm);sh.closePath();
+    const geo=new T.ExtrudeGeometry(sh,{depth:w,bevelEnabled:false});geo.rotateY(-Math.PI/2);geo.translate(x1,0,0);
+    const m=add(new T.Mesh(geo,slate));m.position.set(0,Hs+hb+.07,0);
+    bx(w*.96,.04,.34,trim,xc,Hs+hb+.07+hm+.02,0);return Hs+hb+.07;};
+  const dormer=(x,y0,sz)=>{bx(.3,.34,.2,trim,x,y0+.17,sz*(D/2-.04));bx(.17,.2,.02,glass,x,y0+.18,sz*(D/2+.065));
+    const sh=new T.Shape();sh.moveTo(-.2,0);sh.lineTo(.2,0);sh.lineTo(0,.2);sh.closePath();const gm=add(new T.Mesh(new T.ExtrudeGeometry(sh,{depth:.3,bevelEnabled:false}),slate));
+    gm.rotation.y=sz>0?0:Math.PI;gm.position.set(x,y0+.34,sz*(D/2-.18)+(sz>0?-.01:.01));};
+  const ym=mansard(-2.5,.9,.42,.5);const yl=mansard(-3.8,-2.5,.42,.5);
+  for(const sz of [1,-1]){for(const dx of [-2.0,-0.8,.4])dormer(dx,ym+.05,sz);dormer(-3.15,yl+.05,sz);}
+  // clock tower (east end)
+  const tx=1.55,tw=1.0,th=1.75;bx(tw,th,tw*1.08,brick,tx,Hs+th/2,0);
+  for(const [px,pz] of [[-.5,-.54],[.5,-.54],[-.5,.54],[.5,.54]])bx(.1,th,.1,trim,tx+px,Hs+th/2,pz);
+  bx(tw+.14,.09,tw*1.08+.14,trim,tx,Hs+th+.04,0);bx(tw+.14,.09,tw*1.08+.14,trim,tx,Hs+.05,0);
+  const fc=document.createElement('canvas');fc.width=128;fc.height=128;const x=fc.getContext('2d');x.fillStyle='#f1e9d6';x.fillRect(0,0,128,128);x.fillStyle='#fffdf4';x.beginPath();x.arc(64,64,52,0,7);x.fill();x.strokeStyle='#2a2118';x.lineWidth=4;x.stroke();x.lineWidth=2;for(let i=0;i<12;i++){const a=i*Math.PI/6;x.beginPath();x.moveTo(64+Math.sin(a)*42,64-Math.cos(a)*42);x.lineTo(64+Math.sin(a)*49,64-Math.cos(a)*49);x.stroke();}x.lineWidth=4;x.beginPath();x.moveTo(64,64);x.lineTo(64,28);x.stroke();x.lineWidth=3;x.beginPath();x.moveTo(64,64);x.lineTo(86,74);x.stroke();
+  const ct=new T.CanvasTexture(fc);ct.encoding=T.sRGBEncoding;const cm=lam(0xffffff,{map:ct});
+  for(const sz of [1,-1]){const c=new T.Mesh(new T.PlaneGeometry(.56,.56),cm);c.position.set(tx,Hs+th*.68,sz*(tw*.54+.01));c.rotation.y=sz>0?0:Math.PI;g.add(c);
+    const w=new T.Mesh(new T.PlaneGeometry(.26,.46),glass);w.position.set(tx,Hs+th*.28,sz*(tw*.54+.01));w.rotation.y=sz>0?0:Math.PI;g.add(w);}
+  for(const sx of [1,-1]){const c=new T.Mesh(new T.PlaneGeometry(.5,.5),cm);c.position.set(tx+sx*(tw/2+.01),Hs+th*.68,0);c.rotation.y=sx>0?Math.PI/2:-Math.PI/2;g.add(c);}
+  const ty=Hs+th+.09,sg=new T.ConeGeometry(.78,1.45,4);sg.rotateY(Math.PI/4);const sp=add(new T.Mesh(sg,slate));sp.position.set(tx,ty+.72,0);
+  bx(.05,.7,.05,gold,tx,ty+1.75,0);const fl=new T.Mesh(new T.PlaneGeometry(.3,.17),lam(0xb22234,{side:T.DoubleSide}));fl.position.set(tx+.15,ty+2.0,0);g.add(fl);
+  // low arcade wings with shallow hip roofs and cream fascia
+  for(const [x0,x1] of [[-8,-3.8],[2.05,8]]){const w=x1-x0,xc=(x0+x1)/2;bx(w,.07,D+.5,trim,xc,Hs+.035,0);
+    const sh=new T.Shape();sh.moveTo(-(D+.5)/2,0);sh.lineTo((D+.5)/2,0);sh.lineTo(.12,.22);sh.lineTo(-.12,.22);sh.closePath();
+    const geo=new T.ExtrudeGeometry(sh,{depth:w,bevelEnabled:false});geo.rotateY(-Math.PI/2);geo.translate(x1,0,0);const m=add(new T.Mesh(geo,slate));m.position.set(0,Hs+.07,0);}
+  g.traverse(o=>{if(o.isMesh){o.castShadow=true;}});
   g.position.set(cx,0,z0+ (dir>0?-.1:1.1));if(dir<0)g.rotation.y=0;S.sc.add(g);
 }
 /* ---- sky (follows the camera) ---- */
